@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {createState} from '../dist/game/ent-data.js';
+import {EVENTS,FIXED_ORDER_IDS} from '../dist/game/event-pool.js';
+import {createRun,resultScore} from '../dist/game/event-deck.js';
+import {createFoodState,orderFood,foodStatus,pendingFood,stationSupplies,collectFood,focusFood,focusedFood,foodArrivals,releaseORDrinks,orDrinkAvailable,answerORDrink} from '../dist/game/meal-breaks.js';
+import {eatSupply} from '../dist/game/vitals.js';
+import {foodShelf} from '../dist/game/self-care-ui.js';
+import {BULLETINS} from '../dist/game/scene-life.js';
+import {OR_DINING,operatingPlanSVG} from '../dist/game/operating-plan.js';
+const s=createState(),f=s.food;
+for(const option of EVENTS.lunchOrder.phone)assert(orderFood(createFoodState(),'lunchOrder',option.effect,990));
+const before={energy:s.energy,hunger:s.hunger,meals:s.stats.meals};
+const bento=orderFood(f,'lunchOrder',{meal:true,mealName:'蔬食便當'},990);
+assert.deepEqual({energy:s.energy,hunger:s.hunger,meals:s.stats.meals},before);
+assert.equal(bento.readyAt,1080);assert.equal(foodStatus(bento,1079),'ordered');assert.equal(collectFood(f,'bento',1079),null);assert(!focusFood(f,'bento',1079));assert.equal(stationSupplies(f,1079).length,1);
+assert.equal(orderFood(f,'lunchOrder',{meal:true,mealName:'排骨便當'},1000),bento);assert.equal(bento.name,'蔬食便當');
+assert.deepEqual(foodArrivals(f,1080),[bento]);assert.deepEqual(foodArrivals(f,1081),[]);assert(focusFood(f,'bento',1080));assert.equal(focusedFood(f,1080),bento);
+const html=foodShelf({ward:true,items:stationSupplies(f,1080)});assert(html.includes('蔬食便當'));assert(html.includes('data-food-order="bento"'));assert(!html.includes('data-eat-supply="drink"'));
+assert.equal(collectFood(f,'bento',1080,'or'),null);assert.equal(collectFood(f,'bento',1080),bento);eatSupply(s,bento.supply);assert.equal(s.stats.meals,1);assert.equal(f.focus,null);assert.equal(collectFood(f,'bento',1081),null);
+assert.equal(orderFood(createFoodState(),'lunchOrder',{meal:true},1100).readyAt,1100);
+for(const room of [13,16])for(const option of EVENTS.drink.phone){const t=createState();t.started=true;t.run=createRun({seed:'OR-FOOD'});t.location='f5';t.orRoom=room;t.clock=820;t.accepted=true;t.phase=6;t.caseStep=2;
+  assert(orDrinkAvailable(t));const result=answerORDrink(t,option.effect);assert(result);assert(t.completed.includes('drink'));assert.equal(resultScore(t.completed),10);assert.equal(t.phase,6);assert.equal(t.caseStep,2);assert(t.accepted);assert(!answerORDrink(t,option.effect));
+  if(result.order){assert.equal(foodStatus(result.order,900),'ordered');assert.equal(collectFood(t.food,'drink',900,'or'),null);eatSupply(t,'drink');assert.equal(result.order.taken,false);releaseORDrinks(t.food,900);assert.equal(foodStatus(result.order,900),'ready');assert.equal(collectFood(t.food,'drink',900,'ward'),null);assert(!stationSupplies(t.food,900).some(i=>i.id==='drink'));assert(stationSupplies(t.food,900,'or').some(i=>i.orderId==='drink'));assert.equal(collectFood(t.food,'drink',900,'or'),result.order);assert.equal(collectFood(t.food,'drink',901,'or'),null);}else assert.equal(t.food.orders.length,0);
+}
+for(const loc of ['f7','g2','f1']){const t=createState();t.started=true;t.run=createRun({seed:'NO-OR'});t.location=loc;assert(!orDrinkAvailable(t));assert.equal(answerORDrink(t,{drink:true}),false);}
+const practice=createState();practice.started=true;practice.explore=true;practice.location='f5';practice.orRoom=13;practice.run=createRun({seed:'PRACTICE'});answerORDrink(practice,{drink:true});assert.equal(practice.completed.length,0);
+assert.equal(createState().food.orders.length,0);assert.equal(pendingFood(f).length,0);
+const combinations=new Set();for(let i=0;i<500;i++){const run=createRun({seed:'MEALS-'+i});assert.equal(run.total,18);assert.deepEqual(run.categories,{urgent:3,routine:9,odd:3,daily:3});assert.equal(run.ids.length,new Set(run.ids).size);for(const id of FIXED_ORDER_IDS)assert(run.ids.includes(id));assert.equal(run.phases.filter(p=>p.kind==='case').length,15);assert.equal(run.phases.filter(p=>p.kind==='break').length,1);assert.equal(run.phases.find(p=>p.case==='lunchOrder').clock,990);assert.equal(run.phases.find(p=>p.kind==='break').clock,1080);assert(!run.phases.some(p=>p.case==='drink'));combinations.add(run.ids.slice().sort().join(','));}assert(combinations.size>450);
+assert(OR_DINING.x>20);assert(OR_DINING.spot.x>23);assert(OR_DINING.x+OR_DINING.w/2<41.5);assert(OR_DINING.z+OR_DINING.d/2<29.4);assert(operatingPlanSVG().includes('餐廳'));
+assert.equal(BULLETINS.length,6);const notices=BULLETINS.map(n=>n.title+n.text).join('');for(const text of ['兩位蔡教授','芥末','焦糖','烏龍茶','巧克力','初診間的筆','冰便當','脾氣越來越差','本遊戲虛構研究','內外科住院醫師短缺','歡迎投單'])assert(notices.includes(text),text);
+console.log('Meals passed: 500 varied 18-event runs; 16:30/18:00 dinner, OR-entry-only drink/decline, embedded scoring with procedure preserved, exit delivery, separate ward/restaurant pickup, repeat prevention, practice isolation and right-side dining layout.');

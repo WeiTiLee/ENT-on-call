@@ -1,0 +1,10 @@
+import {CLINIC_DIRECTORY,CONTACT_REQUESTS} from './clinic-contact.js';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function contactMemo(t){return`<aside class="contact-memo"><small>主治來電便條</small><h3>${esc(t.caller)}交代</h3><dl><dt>聯絡</dt><dd>${esc(t.target.department)} · ${esc(t.target.doctor)}</dd><dt>病人</dt><dd>${esc(t.patient.name)} · ${esc(t.patient.id)}</dd><dt>事項</dt><dd>${esc(t.request.purpose)}</dd></dl></aside>`;}
+export function contactDirectory(){return`<section class="contact-directory"><header><small>2G / 工作桌</small><h3>院內電話單</h3></header><table><thead><tr><th>科別／單位</th><th>聯絡人</th><th>簡碼</th></tr></thead><tbody>${CLINIC_DIRECTORY.map(d=>`<tr><td>${esc(d.department)}</td><td>${esc(d.doctor)}</td><td>${esc(d.extension)}</td></tr>`).join('')}</tbody></table></section>`;}
+export function contactPhone(t){return`<div class="maintenance-phone contact-phone"><div class="phone-handset"><i></i><i></i></div><div class="phone-console"><div class="phone-lcd" aria-live="polite"><small>院內電話 · ${t.stage==='connected'?'已接通':'待撥號'}</small><strong>${esc(t.digits||'— — — — —')}</strong></div>${t.stage==='connected'?`<div class="phone-answer">${esc(t.target.doctor)}：「喂，請說。」</div>`:`<div class="phone-keypad">${['1','2','3','4','5','6','7','8','9','clear','0','erase'].map(k=>`<button data-contact-key="${k}" aria-label="${k==='clear'?'清除簡碼':k==='erase'?'刪除一位':'簡碼數字 '+k}">${k==='clear'?'清除':k==='erase'?'⌫':k}</button>`).join('')}</div><button class="phone-call" data-contact-action="call">☎ 撥號</button>`}<span class="phone-extension">初診間 · 院內電話</span></div></div>`;}
+export function contactRelayOptions(t){const wrong=Object.values(CONTACT_REQUESTS).find(r=>r.purpose!==t.request.purpose);return[
+  {id:'correct',text:`我是 ENT R，${t.caller}請您${t.request.purpose}，病人是${t.patient.name}，病歷號${t.patient.id}。`},
+  {id:'wrong-purpose',text:`我是 ENT R，請您${wrong.purpose}，病人是${t.patient.name}，病歷號${t.patient.id}。`},
+  {id:'wrong-patient',text:`我是 ENT R，${t.caller}請您${t.request.purpose}，病人是王建文，病歷號ENT-399。`}
+];}

@@ -1,0 +1,195 @@
+{
+  "version": 1,
+  "status": "prototype_navigation_data",
+  "buildings": [
+    "F",
+    "G",
+    "H"
+  ],
+  "rules": {
+    "cross_building": {
+      "buildings": [
+        "F",
+        "G"
+      ],
+      "same_floor": true,
+      "excluded_floors": [
+        5
+      ],
+      "basis": "使用者確認"
+    },
+    "operating_room_access": {
+      "building": "F",
+      "floor": 5,
+      "requires_f_building_elevator": true
+    },
+    "scope": "僅列遊戲使用樓層；不代表電梯全部停靠樓層。H 棟為背景。"
+  },
+  "nodes": [
+    {
+      "id": "f1",
+      "building": "F",
+      "floor": 1,
+      "label": "1F 急診",
+      "scene": "emergency_department",
+      "location_status": "provisional_latest_user_correction"
+    },
+    {
+      "id": "f2",
+      "building": "F",
+      "floor": 2,
+      "label": "F 棟 2 樓連通區",
+      "scene": "transit"
+    },
+    {
+      "id": "f5",
+      "building": "F",
+      "floor": 5,
+      "label": "F 棟 5 樓刀房",
+      "scene": "operating_room"
+    },
+    {
+      "id": "f7",
+      "building": "F",
+      "floor": 7,
+      "label": "7F 病房與後方值班室",
+      "scene": "ward",
+      "building_basis": "照片中的 F 區病房平面圖"
+    },
+    {
+      "id": "g1",
+      "building": "G",
+      "floor": 1,
+      "label": "G 棟 1 樓連通區",
+      "scene": "transit"
+    },
+    {
+      "id": "g2",
+      "building": "G",
+      "floor": 2,
+      "label": "2G 初診間",
+      "scene": "exam_room"
+    },
+    {
+      "id": "g7",
+      "building": "G",
+      "floor": 7,
+      "label": "G 棟 7 樓連通區",
+      "scene": "transit"
+    }
+  ],
+  "edges": [
+    {
+      "from": "f1",
+      "to": "f2",
+      "mode": "elevator",
+      "bidirectional": true
+    },
+    {
+      "from": "f1",
+      "to": "f5",
+      "mode": "elevator",
+      "bidirectional": true
+    },
+    {
+      "from": "f1",
+      "to": "f7",
+      "mode": "elevator",
+      "bidirectional": true
+    },
+    {
+      "from": "f2",
+      "to": "f5",
+      "mode": "elevator",
+      "bidirectional": true
+    },
+    {
+      "from": "f2",
+      "to": "f7",
+      "mode": "elevator",
+      "bidirectional": true
+    },
+    {
+      "from": "f5",
+      "to": "f7",
+      "mode": "elevator",
+      "bidirectional": true
+    },
+    {
+      "from": "g1",
+      "to": "g2",
+      "mode": "elevator",
+      "bidirectional": true
+    },
+    {
+      "from": "g1",
+      "to": "g7",
+      "mode": "elevator",
+      "bidirectional": true
+    },
+    {
+      "from": "g2",
+      "to": "g7",
+      "mode": "elevator",
+      "bidirectional": true
+    },
+    {
+      "from": "f1",
+      "to": "g1",
+      "mode": "walk",
+      "bidirectional": true
+    },
+    {
+      "from": "f2",
+      "to": "g2",
+      "mode": "walk",
+      "bidirectional": true
+    },
+    {
+      "from": "f7",
+      "to": "g7",
+      "mode": "walk",
+      "bidirectional": true
+    }
+  ],
+  "example_routes": {
+    "exam_to_operating_room": [
+      "g2",
+      "f2",
+      "f5"
+    ],
+    "ward_to_operating_room": [
+      "f7",
+      "f5"
+    ],
+    "ward_to_exam": [
+      "f7",
+      "f2",
+      "g2"
+    ],
+    "ward_to_exam_alternative": [
+      "f7",
+      "g7",
+      "g2"
+    ],
+    "exam_to_emergency": [
+      "g2",
+      "f2",
+      "f1"
+    ],
+    "exam_to_emergency_alternative": [
+      "g2",
+      "g1",
+      "f1"
+    ],
+    "emergency_to_operating_room": [
+      "f1",
+      "f5"
+    ]
+  },
+  "notes": [
+    "路線只描述地理移動；病人是否適合轉送由事件劇情另外設定。",
+    "跨棟走廊長度、轉場與移動耗時尚未定案。",
+    "急診先依使用者最新說明暫定為 F 棟 1 樓。"
+  ]
+}

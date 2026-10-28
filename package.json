@@ -1,0 +1,15 @@
+{
+  "name": "ent-oncall-prototype",
+  "version": "0.5.0",
+  "private": true,
+  "description": "今天你值 ENT：含 F/G 跨棟、會診、刀房操作與午夜休息的耳鼻喉科值班遊戲原型",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.mjs --root dist",
+    "test": "node tests/check-data.mjs && node tools/check-ent.mjs && node tools/check-art.mjs && node tools/check-events.mjs && node tools/check-operating.mjs && node tools/check-morning.mjs && node tools/check-hearing.mjs && node tools/check-activities.mjs && node tools/check-clinic-tubes.mjs && node tools/check-ward-ng.mjs && node tools/check-hearing-consult.mjs && node tools/check-music.mjs && node tools/check-npx.mjs && node tools/check-or-list.mjs && node tools/check-or-work.mjs && node tools/check-local-or.mjs && node tools/check-clinic-contact.mjs && node tools/check-vitals.mjs && node tools/check-scene-life.mjs && node tools/check-ward-life.mjs && node tools/check-meal-breaks.mjs && node tools/check-studio-tools.mjs && node tools/check-night-ward.mjs && node tools/check-ward-consent.mjs && node tools/check-fish.mjs && node tools/check-online-records.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "SEE LICENSE IN LICENSE.md"
+}

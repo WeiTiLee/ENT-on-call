@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#173e37"><meta name="description" content="從白天初診到深夜會診，今天換你值 ENT。耳鼻喉科值班遊戲。">
+  <title>今天你值 ENT · 耳鼻喉科值班遊戲</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./game/game.css"><link rel="stylesheet" href="./game/art.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="今天你值 ENT 首頁"><span class="brand-mark">e<span>＋</span></span><span><b>今天你值 ENT</b><small>耳鼻喉科值班日誌</small></span></a>
+    <div class="shift-clock"><span id="dayLabel">白天 · 第一天</span><strong id="clock">07:30</strong><span class="clock-dot"></span><small id="phaseLabel">準備上班</small></div>
+    <audio id="gameMusic" preload="none" playsinline></audio><div class="top-actions"><button class="subtle-button" id="orListButton" aria-label="查看已拿到的手術清單" hidden>☷ 刀單</button><button class="subtle-button" id="musicButton" hidden>♫ 選歌</button><button class="icon-button" id="soundButton" aria-label="開啟音效" title="音效">♫</button><button class="subtle-button" id="helpButton">操作說明 <span>?</span></button><button class="subtle-button" id="pauseButton">暫停 <span>Ⅱ</span></button></div>
+  </header>
+  <nav id="studioDock" class="studio-dock" aria-label="製作模式工具" hidden><button id="studioOpen">製作台 <kbd>F2</kbd></button><button id="studioNext">直達下一步</button><button id="studioRetry" disabled>重玩本事件</button><span id="studioClock">製作模式</span></nav>
+  <main class="game-shell">
+    <aside class="sidebar">
+      <div class="sidebar-top"><span class="eyebrow">你的值班旅程</span><span class="live-pill"><i></i> 值班中</span></div>
+      <section class="mission-card"><div class="mission-kicker"><span id="missionIndex">01 / 開始的一天</span><span class="tiny-arrow">↗</span></div><h2 id="missionTitle">先到護理站報到</h2><p id="missionDescription">跟同事交班，認一下今天的工作。</p><div class="mission-destination" id="missionDestination">F 棟 7 樓 · 護理站</div><button id="guideButton" class="guide-button">帶我走近 <span>→</span></button><button id="phaseContinue" class="phase-continue" hidden>繼續值班 →</button></section>
+      <div class="progress-row"><span>事件完成</span><b><span id="caseCount">0</span><em> / <span id="caseTotal">12</span></em></b></div><div class="progress-track"><span id="caseProgress"></span></div>
+      <p id="runStatus" class="run-status">每天，都從查房開始。</p>
+      <section class="pending-section"><div class="section-label"><h3>待處理</h3><span id="pendingCount">0</span></div><div id="pendingList" class="pending-list"><div class="empty-pending"><span>✓</span><p>先深呼吸。<br>電話還沒響。</p></div></div></section>
+      <section class="log-section"><div class="section-label"><h3>值班手記</h3><span>今日</span></div><div id="logList" class="log-list" aria-live="polite"></div></section>
+      <div class="sidebar-note"><span>✦</span> 有些時候，熱便當也是一種成就。</div>
+    </aside>
+    <section class="world-panel" aria-label="3D 醫院遊戲場景">
+      <canvas id="scene" aria-label="使用 WASD、方向鍵或點擊地面移動，E 互動" tabindex="0"></canvas>
+      <div class="scene-zoom" id="sceneZoom" aria-label="場景縮放"><button id="objectsButton" aria-label="查看附近物件" title="附近物件">☷</button><button id="zoomOut" aria-label="縮小場景" title="縮小場景">−</button><span aria-hidden="true">視野</span><button id="zoomIn" aria-label="放大場景" title="放大場景">＋</button></div>
+      <div class="location-card" id="locationCard"><div class="location-icon" id="locationCode">7F</div><div><span id="buildingLabel">F 棟 · 七樓</span><h2 id="locationName">耳鼻喉科病房</h2></div><button id="mapButton" class="map-button" aria-label="開啟院區動線圖">⌘ <span>院區動線</span></button></div>
+      <div class="scene-chapter" id="sceneChapter"><i></i><span>一個看似平靜的早上</span></div>
+      <div id="roomLabels" class="ward-labels" aria-label="病房房號與室名"></div>
+      <div id="markers" class="world-markers"></div>
+      <div id="callBanner" class="call-banner" hidden><span class="phone-pulse">☎</span><div><small id="callSource">來電</small><strong id="callTitle">電話響了</strong></div><button id="answerButton">接聽 <span>C</span></button></div>
+      <div class="interaction-wrap" id="interactionWrap"><div id="walkHint" class="walk-hint">W A S D 移動 <span>·</span> 點擊地面也能走動</div><button id="interactButton" class="interact-button" hidden><kbd>E</kbd><span id="interactLabel">互動</span></button></div>
+      <div class="scene-postcard" id="scenePostcard" aria-hidden="true"><div class="scene-art" id="locationArt"></div><span id="postcardCaption">7F / 護理站</span></div>
+      <div class="resident-hud" id="residentHud"><div class="portrait-avatar" id="residentFace" aria-hidden="true"></div><div><small>ENT R / 值班中</small><b id="residentName">小值</b><span id="residentThought">今天應該很平靜。</span></div></div>
+      <div class="scene-bottom"><span class="scene-stamp">ENT / ON CALL</span><div class="compass">N <span>↑</span></div></div>
+      <div id="careAlert" class="care-alert" role="status" hidden><span id="careAlertText"></span><button id="careAction">先照顧自己</button></div><div id="restStrip" class="rest-strip" hidden><div><b id="restTitle"></b><span id="restGain"></span></div><button id="standButton">站起來工作</button><button id="restAnswer" hidden>坐著接電話 ☎</button></div><div id="rageBurst" class="rage-burst" hidden aria-live="assertive"><div class="rage-comic"><i>💢</i><strong>脾氣爆炸！</strong><span>先讓我深呼吸三秒……</span></div></div>
+      <div id="toast" role="status" class="toast" hidden></div>
+      <div class="touch-pad" aria-label="觸控移動"><button data-move="up" aria-label="向上走">↑</button><div><button data-move="left" aria-label="向左走">←</button><button data-move="down" aria-label="向下走">↓</button><button data-move="right" aria-label="向右走">→</button></div></div>
+      <div id="loading" class="loading"><span class="loading-ring"></span><b>正在打開醫院的大門</b><small>白天與夜晚，都在這裡。</small></div>
+    </section>
+  </main>
+  <footer class="bottom-bar"><div class="vitals"><div class="vital"><span>ϟ 體力</span><div><i id="energyBar"></i></div><b id="energyValue">88</b></div><div class="vital hunger"><span>◒ 飽足</span><div><i id="hungerBar"></i></div><b id="hungerValue">70</b></div><div class="vital temper" title="越高越煩躁；吃飯、休息和收尾能緩和"><span>♨ 脾氣</span><div><i id="temperBar"></i></div><b id="temperValue">18</b></div></div><p class="credit">以《我熱愛值班》範本製作 · <a href="https://drcharming.net/" target="_blank" rel="noreferrer">drcharming.net</a></p><button class="vital-rules-button" id="vitalRulesButton">狀態規則 ↗</button></footer>
+  <div id="modal" class="modal-overlay" hidden><section class="modal-card" id="modalCard" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div id="modalContent"></div></section></div>
+  <div class="rotate-note">↻<strong>橫過來，準備值班</strong><span>手機橫向遊玩，能更清楚看見病房與選項。</span></div>
+  <template id="disclaimerTemplate"><p id="gDisclaimer" class="disclaimer">科內娛樂原型製作、若有雷同純屬巧合。<br>醫療情境採簡化劇情，若想體驗值班請玩<a href="https://drcharming.net/" target="_blank" rel="noreferrer">《我熱愛值班》</a></p></template>
+  <script type="module" src="./game/game.js"></script>
+</body>
+</html>

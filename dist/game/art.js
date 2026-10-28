@@ -1,0 +1,7 @@
+export const ART={scrubs:'./assets/art/resident-green-scrubs-v1.png',sprites:'./assets/art/resident-sprites-v2.png',portraits:'./assets/art/resident-portraits-v2.png',scenes:'./assets/art/hospital-scenes-v3.png',characters:{male:{sprites:'./assets/art/resident-sprites-v2.png',portraits:'./assets/art/resident-portraits-v2.png'},female:{sprites:'./assets/art/resident-female-sprites-v3.png',portraits:'./assets/art/resident-female-portraits-v3.png'}}};
+
+export function portraitStyle(index=0){return`--face-x:${index%4*100/3}%;--face-y:${index<4?0:100}%`;}
+export function sceneIndex(location,{sleep=false,dawn=false}={}){if(sleep)return 4;if(dawn)return 5;return location==='g2'?1:location==='f1'?2:location==='f5'?3:0;}
+export function sceneStyle(index){return`--scene-x:${index%2*100}%;--scene-y:${Math.floor(index/2)*50}%`;}
+export function sceneSVG(index){const w=836,h=941/3;return`<svg class="scene-viewport" viewBox="${index%2*w} ${Math.floor(index/2)*h} ${w} ${h}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><image href="${ART.scenes}" width="1672" height="941" /></svg>`;}
+export function expression({clock,energy,temper=0,urgent=false,mode='walk',caseId,food=false}){if(mode==='end')return 6;if(mode==='sleep')return 3;if(food)return 6;if(urgent)return mode==='call'?2:1;if(temper>=85)return 7;if(temper>=60)return 5;if(caseId==='cockroach')return mode==='call'?7:5;if(energy<35)return 4;if(clock>=1440&&clock<1800)return 3;return 0;}
