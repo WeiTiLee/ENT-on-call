@@ -1,3 +1,4 @@
+import {perimeterApproaches,spotDistance,sortedApproaches} from './interaction-points.js';
 import * as THREE from '../vendor/three.module.js';
 import {operatingTeam} from './or-team.js';
 import {LOCATIONS} from './ent-data.js';
@@ -9,7 +10,7 @@ import {NURSING_STATION,bedPatientVisible,wardEventPatientSpot} from './ward-lif
 import {DUTY_ROOMS} from './scene-life.js';
 import {createResidentRest} from './resident-rest.js';
 import {createHospitalDetails} from './scene-details.js';
-import {OR_DINING,OR_ROOMS,OR_WINGS,OR_INTERIORS,operatingDoor,operatingSpot} from './operating-plan.js';
+import {OR_DINING,OR_BOUNDS,OR_HALLS,OR_ROOMS,OR_WINGS,OR_INTERIORS,operatingDoor,operatingSpot} from './operating-plan.js';
 
 const C={floor:0xb9b9b3,wall:0xb4ada0,trim:0x89755c,wood:0x9f784f,dark:0x243a50,green:0x527b7a,blue:0x537d9b,steel:0x8596a1,ivory:0xe0dbce,ink:0x35495b};
 
@@ -67,7 +68,7 @@ export function createWorld(canvas){
   function bed(x,z,patient=false){box(x,.64,z,2.8,.5,5.1,0xc7cdbd,true);box(x,1.01,z,2.65,.3,4.85,0xf2f2e5);box(x,1.2,z-1.6,2,.24,.8,0xffffff);box(x,1.2,z+.5,2.64,.17,2.8,0x91bdaf);for(const a of [-1.6,1.6])line([x+a,.6,z-1.7],[x+a,1.45,z-1.7],.045,0x9eafa2);box(x,1.05,z+2.5,2.8,1.15,.13,0xc7d1c6);if(patient){sphere(x,1.52,z-1.5,.32,0xd6ae89);box(x,1.34,z-.3,.9,.3,1.6,0xb5d2c2);} }
   function curtain(x,z,width=4,side=false){const g=new THREE.Group();root.add(g);const count=Math.round(width/.2);for(let i=0;i<count;i++){const a=(i/count-.5)*width;box(side?x:x+a,1.6,side?z+a:z,side?.13:.23,2.7,side?.23:.13,i%2?0x8dc7c4:0x7bb8b8);}line([side?x:x-width/2,3.1,side?z-width/2:z],[side?x:x+width/2,3.1,side?z+width/2:z],.035,0xb2bcb0);}
   function roomBase(w,d,color=C.floor){bounds={x:w/2,z:d/2};box(0,-.33,0,w+.4,.65,d+.4,0xbdc8b1);box(0,.015,0,w,.08,d,0xf5f3e8);box(0,.067,0,w-.2,.025,d-.2,flooring);box(0,.65,-d/2,w,1.3,.25,C.wall,true);box(-w/2,.65,0,.25,1.3,d,C.wall,true);box(w/2,.65,0,.25,1.3,d,C.wall,true);box(0,.16,d/2,w,.24,.25,C.trim);}
-  function elevator(x,z){box(x,1.25,z,3.6,2.5,.6,0xb9c3b7,true);box(x,1.25,z+.33,2.7,2.25,.05,0x8c9b93);box(x,1.25,z+.37,.035,2.18,.02,0x65776d);sign(LOCATIONS[loc].code,x,2.75,z+.35,1.6,'#263e52','#d5eb9a');box(x+2.15,1.1,z,.22,.44,.2,0x637b65);spots.push({id:'elevator',x,z:z+2.2,label:'搭電梯',icon:'↕'});}
+  function elevator(x,z){box(x,1.25,z,3.6,2.5,.6,0xb9c3b7,true);box(x,1.25,z+.33,2.7,2.25,.05,0x8c9b93);box(x,1.25,z+.37,.035,2.18,.02,0x65776d);sign(LOCATIONS[loc].code,x,2.75,z+.35,1.6,'#263e52','#d5eb9a');box(x+2.15,1.1,z,.22,.44,.2,0x637b65);spots.push({id:'elevator',x,z:z+2.2,approaches:perimeterApproaches(x,z,3.6,.6,1.2),label:'搭電梯',icon:'↕'});}
   function bridge(x,z){sign(loc.startsWith('f')?'往 G 棟 →':'← 往 F 棟',x,2.15,z,4,'#f2f3e7','#58744a');box(x,.025,z+1.1,4,.018,1.4,0xb7c99e);spots.push({id:'bridge',x,z:z+1,label:loc.startsWith('f')?'跨到 G 棟':'跨到 F 棟',icon:'↔'});}
 
   function printerDevice(x,y,z){
@@ -94,7 +95,7 @@ export function createWorld(canvas){
       for(let i=1;i<beds.length;i++){const divider=(beds[i-1].x+beds[i].x)/2;line([divider,2.25,r.z-1.9],[divider,2.25,r.z+.65],.035,0x9eafb5);for(let fold=0;fold<5;fold++)box(divider,1.36,r.z-1.75+fold*.15,.07,1.7,.17,fold%2?0x75a9ad:0x8dbdbb);}
       labels.push({id:room.id,text:room.id,x:inner-side*.8,z:r.z,height:1.6,kind:'room'});if(room.bedCount===1)chair(side*15.8,r.z,side>0?-Math.PI/2:Math.PI/2);
     }
-    for(const item of WARD_PLAN.core){const r=wardRect(item),duty=item.id.startsWith('值班室'),exam=item.id==='檢查室';box(r.x,.075,r.z,r.w-.15,.025,r.d-.15,duty?0xa9aeb6:0xb1b7ba);if(!exam&&item.id!=='討論室')for(const side of [-1,1])box(r.x+side*r.w/2,.58,r.z,.13,1.16,r.d,C.wall);box(r.x,.58,r.z+r.d/2,r.w,1.16,.13,C.wall);if(exam){box(r.x-r.w/2,.58,r.z,.13,1.16,r.d,C.wall,true);const gap=2.3,part=(r.d-gap)/2;for(const side of [-1,1])box(r.x+r.w/2,.58,r.z+side*(gap/2+part/2),.13,1.16,part,C.wall,true);box(r.x,.58,r.z-r.d/2,r.w,1.16,.13,C.wall,true);chair(r.x-1.8,r.z,0,true);box(r.x-3.2,.6,r.z,1,1.2,1,0x829ea8,true);spots.push({id:'exam',x:r.x+1,z:r.z,label:'7F 檢查室',icon:'＋'});}else if(item.id==='討論室'){const gap=2.3,part=(r.d-gap)/2;box(r.x-r.w/2,.58,r.z,.13,1.16,r.d,C.wall,true);box(r.x,.58,r.z-r.d/2,r.w,1.16,.13,C.wall,true);for(const side of [-1,1])box(r.x+r.w/2,.58,r.z+side*(gap/2+part/2),.13,1.16,part,C.wall,true);solids.push({x:r.x,z:r.z,w:1.05,d:.7});spots.push({id:'discussion-snacks',x:r.x+1.5,z:r.z+.9,label:'討論室 · 餅乾',height:1.8,labelX:r.x+.4,labelZ:r.z});}
+    for(const item of WARD_PLAN.core){const r=wardRect(item),duty=item.id.startsWith('值班室'),exam=item.id==='檢查室';box(r.x,.075,r.z,r.w-.15,.025,r.d-.15,duty?0xa9aeb6:0xb1b7ba);if(!exam&&item.id!=='討論室')for(const side of [-1,1])box(r.x+side*r.w/2,.58,r.z,.13,1.16,r.d,C.wall);box(r.x,.58,r.z+r.d/2,r.w,1.16,.13,C.wall);if(exam){box(r.x-r.w/2,.58,r.z,.13,1.16,r.d,C.wall,true);const gap=2.3,part=(r.d-gap)/2;for(const side of [-1,1])box(r.x+r.w/2,.58,r.z+side*(gap/2+part/2),.13,1.16,part,C.wall,true);box(r.x,.58,r.z-r.d/2,r.w,1.16,.13,C.wall,true);chair(r.x-1.8,r.z,0,true);box(r.x-3.2,.6,r.z,1,1.2,1,0x829ea8,true);spots.push({id:'exam',x:r.x+1,z:r.z,label:'7F 檢查室',icon:'＋'});}else if(item.id==='討論室'){const gap=2.3,part=(r.d-gap)/2;box(r.x-r.w/2,.58,r.z,.13,1.16,r.d,C.wall,true);box(r.x,.58,r.z-r.d/2,r.w,1.16,.13,C.wall,true);for(const side of [-1,1])box(r.x+r.w/2,.58,r.z+side*(gap/2+part/2),.13,1.16,part,C.wall,true);solids.push({x:r.x,z:r.z,w:.85,d:2.55});box(r.x-1.05,.75,r.z-3.8,1.5,1.5,.85,wood,true);monitor(r.x-1.05,r.z-3.8,Math.PI);box(r.x,2.15,r.z-r.d/2+.12,3.5,1.8,.1,0x233e51);spots.push({id:'conference',x:r.x+.55,z:r.z-3.5,label:'晨會 · 報告電腦',height:3.1,labelX:r.x-1,labelZ:r.z-3.8,approaches:[{x:r.x-1.05,z:r.z-2.6}]},{id:'discussion-snacks',x:r.x+1.6,z:r.z+3.4,label:'討論室 · 餅乾',height:1.8,labelX:r.x,labelZ:r.z+2.1});}
       else if(!duty){box(r.x,.58,r.z-r.d/2,r.w,1.16,.13,C.wall);solids.push({x:r.x,z:r.z,w:r.w/2+.1,d:r.d/2+.1});}else{const dutyRoom=DUTY_ROOMS[item.id],bx=r.x+.65,bz=r.z+.1;
         box(bx,.65,bz,2,.5,3.5,0x81939f,true);box(bx,1.01,bz,1.92,.28,3.4,0xe6e0d5);box(bx,1.2,bz-1.18,1.5,.2,.6,0xf1eadc);box(bx,1.2,bz+.4,1.9,.12,1.8,0x7e9dac);
         const selected=dutyRoom.character===player.userData.character;spots.push({id:selected?'sleep':'sleep-other',x:r.x+1.96,z:r.z+.6,label:dutyRoom.name+' · 躺下',height:2.4,restPose:'lie',allowedCharacter:dutyRoom.character,seat:{x:bx,z:bz}});
@@ -134,52 +135,29 @@ export function createWorld(canvas){
     box(5.8,1.55,-12.3,.8,.25,.5,0xe3ddcc);box(5.8,1.7,-12.3,.25,.03,.08,0x687c89);
     spots.push({id:'treatment-bed',x:-4.9,z:-6,label:'治療床',patientRest:true,height:2.2},{id:'patient',x:0,z:-1.1,label:'診療椅 · 看病人',icon:'＋'},{id:'patient2',x:8,z:-1.1,label:'第二張診療椅',icon:'＋'},{id:'clinic-nurse',x:-12.8,z:-6,label:'送文件的小禾',height:3.3,labelX:-14,labelZ:-6},{id:'clinic-phone',x:-2.5,z:3,label:'電話單',height:3.5,labelX:-1.4,labelZ:4.4},{id:'desk',x:-10.5,z:1.8,label:'電腦',height:4.2,labelX:-11.3,labelZ:5.6},{id:'printer',x:-7.3,z:3,label:'印表機',height:3.1,labelX:-7.3,labelZ:5.1},{id:'snacks',x:1.5,z:3.5,label:'零食櫃',height:3.6,labelX:3.4,labelZ:5.2},{id:'tissue',x:5.8,z:-10.5,label:'洗手台 · 補衛生紙',icon:'▱'});elevator(11.5,10.6);bridge(-11.5,10.6);return{x:0,z:9};}
   function operatingSuite(r){
-    const {x,z,w,d}=r,side=Math.sign(z),inner=z-side*d/2;
-    box(x,.08,z,w-.2,.025,d-.2,0xabb9a6);
-    box(x,1.55,z+side*d/2,w,3.1,.2,0x9caa78,true);
-    for(const edge of [-1,1])box(x+edge*w/2,.8,z,.18,1.6,d,0xabb58b,true);
-    for(const edge of [-1,1])box(x+edge*4.5,.7,inner,5,1.4,.18,0xa7b286,true);
-    box(x,.09,inner,3.4,.035,1.3,0x829d97);
-    labels.push({id:'OR'+r.number,text:r.number+'房',x:x-4.6,z:inner,height:2.3,kind:'or-room'});
-    sign(r.number+'房',x,2.6,z+side*(d/2-.14),7,'#314f49','#f2e5c8');
-    box(x,1.35,inner,3.7,2.7,.23,0x627f70,true);box(x,1.7,inner-side*.15,2,.65,.04,0xa9c2b8);
-    if(OR_INTERIORS.includes(r.number)){
-      const door=operatingDoor(r.number);spots.push({id:operatingSpot(r.number),...door,labelX:door.x+3.6,height:3.6,label:'進入 '+r.number+'房',icon:'↪',orRoom:r.number});return;
-    }
-    box(x,.63,z,2.35,1.1,4.8,0x9da9a4,true);box(x,1.25,z,2.55,.18,5,0x3d8e79);
-    box(x,1.43,z,2.5,.16,3.9,0x4c9b89);sphere(x,1.52,z+side*1.9,.29,0xd0b099);
-    for(const a of [-1,1]){line([x+a,.25,z-1.5],[x+a,.25,z+1.5],.06,0x9fb1b4);cyl(x+a,.14,z+1.6,.17,.25,0x405a61);}
-    for(const a of [-1,1]){
-      const lx=x+a*2.1,lz=z+side*.8;
-      line([x,4.8,z+side*3],[lx,4.7,lz],.09,0xc9d0b7);line([lx,4.7,lz],[lx,3.7,lz],.07,0xb7c2b2);
-      cyl(lx,3.6,lz,.93,.2,0xd9ddc5);cyl(lx,3.47,lz,.75,.035,0x88a39c);
-      for(let i=0;i<6;i++){const angle=i*Math.PI/3;sphere(lx+Math.sin(angle)*.48,3.44,lz+Math.cos(angle)*.48,.12,0xfcf2c8);}
-    }
-    box(x+4.7,.82,z+side*1.5,2.3,1.5,2,0xbfc9c0,true);
-    monitor(x+4.7,z+side*1.5,side<0?0:Math.PI);box(x+4.7,1.05,z+side*1.5,1.6,.85,.12,0x456562);
-    box(x-4.8,.7,z+side*3.9,2.4,1.3,1.4,0x9eaca9,true);box(x-4.8,1.4,z+side*3.9,2.6,.13,1.6,0x4b9481);
-    for(let i=0;i<3;i++)box(x-5.4+i*.5,1.5,z+side*3.9,.06,.035,.8,0xcbd1c1);
-    const team=person(x+2.9,z,0x328678);team.rotation.y=-Math.PI/2;root.add(team);
-    const nurse=person(x-4.8,z+side*1.4,0x487f73);nurse.rotation.y=Math.PI/2;root.add(nurse);
-    // The ceiling is omitted to keep the play area visible from above.
-    box(x+5.8,1.4,z+side*4.5,1.5,2.6,.4,0xc3c8ac);
-    const door=operatingDoor(r.number);spots.push({id:operatingSpot(r.number),...door,labelX:door.x+3.6,height:3.6,label:'進入 '+r.number+'房',icon:'↪',orRoom:r.number});
+    const {x,z,w,d}=r,side=r.doorSide==='north'?1:-1,inner=z-side*d/2,gap=3.8,part=(w-gap)/2;
+    box(x,.08,z,w-.2,.025,d-.2,0xabb9a6);box(x,.75,z+side*d/2,w,1.5,.2,0x9caa78,true);
+    for(const edge of [-1,1]){box(x+edge*w/2,.75,z,.18,1.5,d,0xabb58b,true);box(x+edge*(gap/2+part/2),.7,inner,part,1.4,.18,0xa7b286,true);}
+    box(x,.09,inner,3.4,.035,1.3,0x829d97);box(x,1.35,inner,3.7,2.7,.23,0x627f70,true);box(x,1.7,inner-side*.15,2,.65,.04,0xa9c2b8);
+    labels.push({id:'OR'+r.number,text:r.number+'房',x:x-3.8,z:inner,height:2.3,kind:'or-room'});
+    sign(r.number+'房',x,2.8,inner,3,'#314f49','#f2e5c8');
+    if(!OR_INTERIORS.includes(r.number)){box(x,.7,z,2,1.1,4.6,0x9da9a4);box(x,1.32,z,2.2,.18,4.8,0x3d8e79);cyl(x,3.3,z,.9,.18,0xd9ddc5);box(x+3,.8,z+side*1.5,1.5,1.5,1.3,0xbfc9c0);monitor(x+3,z+side*1.5);}
+    const door=operatingDoor(r.number);spots.push({id:operatingSpot(r.number),...door,labelX:door.x+2.8,height:3.6,label:'進入 '+r.number+'房',icon:'↪',orRoom:r.number});
   }
   function operatingRoom(){
-    roomBase(84,60);bounds={x:41.5,z:29.4};box(0,.09,0,55,.025,7,0x779896);
-    box(0,.09,21,69,.025,5,0x9cafa0);
+    roomBase(OR_BOUNDS.x*2,OR_BOUNDS.z*2);bounds={...OR_BOUNDS};for(const h of OR_HALLS)box(h.x,.09,h.z,h.w,.025,h.d,0x879f98);
     for(const r of OR_ROOMS)operatingSuite(r);
     for(const wing of OR_WINGS){
       const x=wing.side*31;box(x,.09,0,9,.025,50,0x879f98);
-      sign('其他刀房走廊',x,.12,-23,7,'#abc1b2','#355e56',true);
+      sign('延伸走廊',x,.12,-23,7,'#abc1b2','#355e56',true);
       wing.numbers.forEach((number,i)=>{const z=-18+i*3.4,dx=wing.side*38;
         box(dx,1.25,z,.3,2.5,2.7,0x647f79,true);box(dx-wing.side*.18,1.25,z,.06,2.2,2,0xa5b3a1);
         labels.push({id:'OR'+number,text:number+'房',x:dx-wing.side*1.2,z,height:1.8,kind:'or-other',detail:number+'房 · 其他走廊'});
         spots.push({id:operatingSpot(number),x:dx-wing.side*2,z,labelX:dx-wing.side*5,height:3.6,label:'進入 '+number+'房',icon:'↪',orRoom:number});
       });
     }
-    box(15,.75,11,6,1.5,2.5,0x8a9b87,true);monitor(15,11);restChair('rest-chair',12,8.5,{label:'椅子 · 坐下',approach:{x:12,z:7.3}});sign('刀房工作站',15,1.9,12.4,5,'#314f49','#f2e5c8');
-    sign('17房 / 16房 / 15房',0,.13,-2.2,10,'#789a91','#e3e5ce',true);sign('12房 / 13房',-7,.13,2.2,8,'#789a91','#e3e5ce',true);
+    box(-15,.75,8,6,1.5,2.5,0x8a9b87,true);monitor(-15,8);restChair('rest-chair',-15,10.5,{label:'椅子 · 坐下',approach:{x:-15,z:11.8}});sign('刀房工作站',-15,1.9,9.4,5,'#314f49','#f2e5c8');
+    sign('15房 / 16房 / 17房 / 18房',7,.13,-1.7,14,'#789a91','#e3e5ce',true);sign('13房 / 12房',6,.13,1.7,8,'#789a91','#e3e5ce',true);
     const dining=OR_DINING;box(dining.x,.1,dining.z,dining.w,.04,dining.d,0xc1c4b0);
     box(34,.75,28,9,1.5,1.4,wood,true);box(34,1.53,28,9.3,.1,1.6,0xd4dbca);sign('餐廳',33,3.2,28.5,6,'#314f49','#f2e5c8');
     for(let i=0;i<4;i++){cyl(31+i*1.4,1.9,28,.26,.7,0xc7b28c);cyl(31+i*1.4,2.27,28,.28,.04,0xe8e0ca);line([31+i*1.4,2.28,28],[31+i*1.4,2.7,28],.035,0xe2d3b1);}
@@ -211,7 +189,7 @@ export function createWorld(canvas){
     spots.push({id:'bulletin',x:6,z:-7.3,label:'布告欄',height:3.3});elevator(-7,5.2);bridge(7,5.2);return{x:0,z:5.2};}
 
   function clear(){for(const material of root.userData.detailMaterials||[])material.dispose();for(const texture of root.userData.detailTextures||[])texture.dispose();root.traverse(o=>{if(o.isLineSegments)o.geometry?.dispose();if(o.isMesh){o.geometry?.dispose();if(o.material?.map&&!textures.has(o.material.map)){if(o.material.type==='MeshBasicMaterial')o.material.map.dispose();}}});scene.remove(root);root=new THREE.Group();scene.add(root);solids=[];spots=[];labels=[];path=[];wardPatients=new Map();walkArea=null;morningGroup=null;attending=null;companion=null;followTrail=[];escortState=null;clinicTubeGroup=null;clinicTubeKey=null;clinicNurse=null;}
-  function build(id,{orRoom=null,returnRoom=null,seniorJoined=false}={}){setPosture('stand');clear();loc=id;setCharacter(player.userData.character);interiorRoom=id==='f5'&&OR_INTERIORS.includes(orRoom)?orRoom:null;const kind=LOCATIONS[id].kind;let spawn=kind==='ward'?ward():kind==='clinic'?clinic():kind==='or'?(interiorRoom?operatingInterior(interiorRoom,seniorJoined):operatingRoom()):kind==='ed'?emergency():lobby();const details=createHospitalDetails(THREE,root);if(kind==='ward')details.ward();else if(kind==='clinic')details.clinic();else if(kind==='or'){if(interiorRoom)details.operating(interiorRoom);else details.operatingCorridor();}else if(kind==='ed')details.emergency();else details.lobby();details.flush();if(id==='f5'&&!interiorRoom&&OR_INTERIORS.includes(returnRoom))spawn=operatingDoor(returnRoom);const overview=kind==='ward'||kind==='or'&&!interiorRoom;offset.set(kind==='ward'?8:overview?0:17,kind==='ward'?33:overview?37:27,overview?27:24);lastFrame=-1;spriteDirection=0;player.position.set(spawn.x,0,spawn.z);look.set(interiorRoom?0:spawn.x,0,interiorRoom?-1:spawn.z);camera.position.copy(look).add(offset);camera.lookAt(look);setMorning(morningState);setWardPatientTask(wardPatientTask);setClinicTube(clinicTubeState);setClinicNurseAway(clinicNurseAway);resize();return spots;}
+  function build(id,{orRoom=null,returnRoom=null,seniorJoined=false}={}){setPosture('stand');clear();loc=id;setCharacter(player.userData.character);interiorRoom=id==='f5'&&OR_INTERIORS.includes(orRoom)?orRoom:null;const kind=LOCATIONS[id].kind;let spawn=kind==='ward'?ward():kind==='clinic'?clinic():kind==='or'?(interiorRoom?operatingInterior(interiorRoom,seniorJoined):operatingRoom()):kind==='ed'?emergency():lobby();const details=createHospitalDetails(THREE,root);if(kind==='ward')details.ward();else if(kind==='clinic')details.clinic();else if(kind==='or'){if(interiorRoom)details.operating(interiorRoom);else details.operatingCorridor();}else if(kind==='ed')details.emergency();else details.lobby();details.flush();configureApproaches();if(id==='f5'&&!interiorRoom&&OR_INTERIORS.includes(returnRoom))spawn=operatingDoor(returnRoom);const overview=kind==='ward'||kind==='or'&&!interiorRoom;offset.set(kind==='ward'?8:overview||interiorRoom?0:17,kind==='ward'?33:overview||interiorRoom?37:27,overview||interiorRoom?27:24);lastFrame=-1;spriteDirection=0;player.position.set(spawn.x,0,spawn.z);look.set(interiorRoom?0:spawn.x,0,interiorRoom?-1:spawn.z);camera.position.copy(look).add(offset);camera.lookAt(look);setMorning(morningState);setWardPatientTask(wardPatientTask);setClinicTube(clinicTubeState);setClinicNurseAway(clinicNurseAway);resize();return spots;}
   function setClinicNurseAway(away){
     clinicNurseAway=!!away;if(loc!=='g2'||!clinicNurse)return false;
     clinicNurse.visible=!clinicNurseAway;const present=spots.some(s=>s.id==='clinic-nurse');
@@ -254,25 +232,35 @@ export function createWorld(canvas){
     if(m.escort!==escortState){followTrail=[];if(m.escort==='following')companion.position.set(player.position.x,0,player.position.z);escortState=m.escort;}
     if(m.escort==='exam'){const exam=spots.find(s=>s.id==='exam');companion.position.set(exam.x-1.3,0,exam.z);}
   }
+  function configureApproaches(){
+    const add=(id,x,z,w,d,pad=1.1)=>{const s=spots.find(s=>s.id===id);if(s)s.approaches=perimeterApproaches(x,z,w,d,pad);};
+    if(loc==='f7'){const n=NURSING_STATION;add('computer',-1.5,n.frontZ,2,1.4);add('printer',n.printer.x,n.printer.z,1.4,1.6);add('consent-tablet',n.tablet.x,n.tablet.z,1,1.5);const nurse=spots.find(s=>s.id==='nurse');nurse.approaches=[{x:.3,z:n.frontZ+1.8},{x:-3.5,z:n.center.z-2.5},{x:3.5,z:n.center.z-2.5}];}
+    if(loc==='g2'){add('patient',0,-4.4,2.6,3.4);add('patient2',8,-4.4,2.6,3.4);add('treatment-bed',-7,-6,2.4,4.8);add('clinic-nurse',-14,-6,1,1);add('desk',-10.5,5.9,3,3.4);add('printer',-7.3,5.9,1.4,3.4);add('clinic-phone',-2.5,5.9,1.4,3.4);add('snacks',1.5,5.8,2.6,1.8);add('tissue',5.8,-12.3,1,1.8);}
+    if(interiorRoom){for(const role of operatingTeam(interiorRoom))add('or-team-'+role.id,role.x,role.z,1,1);add('or-computer',10,1,3.4,1.7);add('or-radio',-11,-2.9,2,1.5);add('operation',0,-.8,3.3,5.7);add('or-exit',10,10.6,3.5,.3);}
+    for(const s of spots)if(s.restPose==='sit'&&s.seat)s.approaches=perimeterApproaches(s.seat.x,s.seat.z,1.2,1.2,.9);
+  }
+  function clearApproach(point){const dx=point.x-player.position.x,dz=point.z-player.position.z,d=Math.hypot(dx,dz);if(!isOpen(point.x,point.z))return false;if(d>4)return true;for(let n=1;n<Math.ceil(d/.2);n++)if(!isOpen(player.position.x+dx*n/Math.ceil(d/.2),player.position.z+dz*n/Math.ceil(d/.2)))return false;return true;}
+  function distanceToSpot(spot){return spotDistance(spot,player.position,clearApproach);}
+  function walkToSpot(id){const spot=spots.find(s=>s.id===id);if(!spot)return false;for(const p of sortedApproaches(spot,player.position,q=>isOpen(q.x,q.z)))if(walkTo(p.x,p.z))return true;return false;}
   function isOpen(x,z){let inside=!walkArea;if(walkArea){for(let i=0,j=walkArea.length-1;i<walkArea.length;j=i++){const a=walkArea[i],b=walkArea[j];if((a.z>z)!==(b.z>z)&&x<(b.x-a.x)*(z-a.z)/(b.z-a.z)+a.x)inside=!inside;}}return inside&&Math.abs(x)<bounds.x-.25&&Math.abs(z)<bounds.z-.25&&!solids.some(s=>Math.abs(x-s.x)<s.w&&Math.abs(z-s.z)<s.d);}
   function tryMove(dx,dz){const p=player.position;const before=p.clone();if(isOpen(p.x+dx,p.z))p.x+=dx;if(isOpen(p.x,p.z+dz))p.z+=dz;walked+=p.distanceTo(before);return p.distanceTo(before);}
-  function walkTo(x,z){const step=.8,minX=-Math.floor(bounds.x/step),maxX=Math.floor(bounds.x/step),minZ=-Math.floor(bounds.z/step),maxZ=Math.floor(bounds.z/step);const key=(a,b)=>`${a},${b}`;const nearest=(a,b)=>{let cx=Math.round(a/step),cz=Math.round(b/step);for(let r=0;r<7;r++)for(let i=-r;i<=r;i++)for(let j=-r;j<=r;j++)if(isOpen((cx+i)*step,(cz+j)*step))return[cx+i,cz+j];return null;};const start=nearest(player.position.x,player.position.z),end=nearest(x,z);if(!start||!end)return false;const queue=[start],came=new Map([[key(...start),null]]);let found=false;for(let head=0;head<queue.length&&head<7000;head++){const p=queue[head];if(p[0]===end[0]&&p[1]===end[1]){found=true;break;}for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]]){const nx=p[0]+a,nz=p[1]+b,k=key(nx,nz);if(nx<minX||nx>maxX||nz<minZ||nz>maxZ||came.has(k)||!isOpen(nx*step,nz*step))continue;if(a&&b&&(!isOpen((p[0]+a)*step,p[1]*step)||!isOpen(p[0]*step,(p[1]+b)*step)))continue;came.set(k,p);queue.push([nx,nz]);}}
+  function walkTo(x,z){const step=.8,minX=-Math.floor(bounds.x/step),maxX=Math.floor(bounds.x/step),minZ=-Math.floor(bounds.z/step),maxZ=Math.floor(bounds.z/step);const key=(a,b)=>`${a},${b}`;const nearest=(a,b)=>{let cx=Math.round(a/step),cz=Math.round(b/step);for(let r=0;r<7;r++)for(let i=-r;i<=r;i++)for(let j=-r;j<=r;j++)if(isOpen((cx+i)*step,(cz+j)*step))return[cx+i,cz+j];return null;};const start=nearest(player.position.x,player.position.z),end=nearest(x,z);if(!start||!end)return false;const queue=[start],came=new Map([[key(...start),null]]);let found=false;for(let head=0;head<queue.length&&head<50000;head++){const p=queue[head];if(p[0]===end[0]&&p[1]===end[1]){found=true;break;}for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]]){const nx=p[0]+a,nz=p[1]+b,k=key(nx,nz);if(nx<minX||nx>maxX||nz<minZ||nz>maxZ||came.has(k)||!isOpen(nx*step,nz*step))continue;if(a&&b&&(!isOpen((p[0]+a)*step,p[1]*step)||!isOpen(p[0]*step,(p[1]+b)*step)))continue;came.set(k,p);queue.push([nx,nz]);}}
     if(!found)return false;path=[];let q=end;while(q){path.unshift({x:q[0]*step,z:q[1]*step});q=came.get(key(...q));}return true;}
   function pick(clientX,clientY){const rect=canvas.getBoundingClientRect();pointer.set((clientX-rect.left)/rect.width*2-1,-(clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);if(ray.ray.intersectPlane(ground,hit))return walkTo(hit.x,hit.z);return false;}
-  function resize(){const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);const aspect=r.width/r.height;const view=interiorRoom?11.5:13.5;camera.left=-view*aspect;camera.right=view*aspect;camera.top=view;camera.bottom=-view;camera.updateProjectionMatrix();}
+  function resize(){const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);const aspect=r.width/r.height;const view=interiorRoom?Math.max(11.7,15.2/aspect):12.2;camera.left=-view*aspect;camera.right=view*aspect;camera.top=view;camera.bottom=-view;camera.updateProjectionMatrix();}
   const resizeObserver=new ResizeObserver(resize);resizeObserver.observe(canvas);
   function update(dt,input={},isNight=false,enabled=true){elapsed+=dt;night=isNight;let moved=0;const p=player.position;if(enabled&&restActor.posture==='stand'){let dx=input.x||0,dz=input.y||0;if(dx||dz){path=[];const l=Math.hypot(dx,dz);dx/=l;dz/=l;const vx=offset.z*dx+offset.x*dz,vz=-offset.x*dx+offset.z*dz;const len=Math.hypot(vx,vz);const speed=(input.run?7:4.6)*(input.tired?.7:1)*dt;moved=tryMove(vx/len*speed,vz/len*speed);if(moved)player.rotation.y=Math.atan2(vx,vz);}else if(path.length){const next=path[0],vx=next.x-p.x,vz=next.z-p.z,d=Math.hypot(vx,vz);if(d<.015){if(isOpen(next.x,next.z)){p.x=next.x;p.z=next.z;}path.shift();}else{const speed=Math.min(d,5.6*dt);moved=tryMove(vx/d*speed,vz/d*speed);player.rotation.y=Math.atan2(vx,vz);if(moved<.001)path=[];}}}
     if(loc==='f7'&&morningState?.escort==='following'&&companion){const tail=followTrail.at(-1)||companion.position;if(Math.hypot(p.x-tail.x,p.z-tail.z)>.25)followTrail.push({x:p.x,z:p.z});if(followTrail.length>5){const q=followTrail.shift(),dx=q.x-companion.position.x,dz=q.z-companion.position.z;companion.rotation.y=Math.atan2(dx,dz);companion.position.set(q.x,0,q.z);}}
     if(moved){const vx=Math.sin(player.rotation.y),vz=Math.cos(player.rotation.y),screenX=vx*offset.z-vz*offset.x,depth=vx*offset.x+vz*offset.z;spriteDirection=Math.abs(screenX)>Math.abs(depth)*1.1?(screenX>0?3:1):(depth>0?0:2);}
     const spriteRow=moved&&Math.floor(elapsed*7)%2?1:0,frame=spriteRow*4+spriteDirection;
-    if(frame!==lastFrame){const atlas=(loc==='f5'?SCRUB_ATLASES:SPRITE_ATLASES)[player.userData.character],cell=atlas.frames[frame],map=player.userData.map;map.repeat.set(cell.w/atlas.width,cell.h/atlas.height);map.offset.set(cell.x/atlas.width,1-(cell.y+cell.h)/atlas.height);player.userData.sprite.scale.set(4.2*cell.w/cell.h,4.2,1);lastFrame=frame;}
+    if(frame!==lastFrame){const atlas=(loc==='f5'?SCRUB_ATLASES:SPRITE_ATLASES)[player.userData.character],cell=atlas.frames[frame],map=player.userData.map;map.repeat.set(cell.w/atlas.width,cell.h/atlas.height);map.offset.set(cell.x/atlas.width,1-(cell.y+cell.h)/atlas.height);player.userData.sprite.scale.set(4.95*cell.w/cell.h,4.95,1);lastFrame=frame;}
     player.userData.sprite.material.color.set(night?0xb7cbe2:0xfff2df);
     const bob=moved?Math.sin(elapsed*11)*.05:0;player.position.y=bob;player.userData.legs.forEach((leg,i)=>leg.rotation.x=moved?Math.sin(elapsed*11+i*Math.PI)*.32:0);player.userData.arms.forEach((arm,i)=>arm.rotation.x=moved?Math.sin(elapsed*11+i*Math.PI)*.24:0);halo.position.set(p.x,.05,p.z);halo.visible=restActor.posture==='stand';restActor.update(dt,(loc==='f5'?SCRUB_ATLASES:SPRITE_ATLASES)[player.userData.character]);sun.position.set(p.x-15,35,p.z+18);sun.target.position.set(p.x,0,p.z);
-    const targetLook=interiorRoom?new THREE.Vector3(0,0,-1):loc==='f7'?new THREE.Vector3(THREE.MathUtils.clamp(p.x,-8,8),0,THREE.MathUtils.clamp(p.z-3,-26,25)):new THREE.Vector3(p.x,0,p.z-2);look.lerp(targetLook,1-Math.exp(-dt*4));camera.position.copy(look).add(offset);camera.lookAt(look);sun.intensity=THREE.MathUtils.lerp(sun.intensity,night?.8:2.1,.025);hemi.intensity=THREE.MathUtils.lerp(hemi.intensity,night?.68:1.25,.025);renderer.toneMappingExposure=THREE.MathUtils.lerp(renderer.toneMappingExposure,night?.9:1.05,.025);scene.background.lerp(new THREE.Color(night?0x293e58:0x516271),.025);
-    if(goal){const g=spots.find(s=>s.id===goal);goalRing.visible=!!g;if(g){goalRing.position.set(g.x,.09,g.z);goalRing.scale.setScalar(1+Math.sin(elapsed*3)*.1);}}else goalRing.visible=false;renderer.render(scene,camera);return moved;}
+    const targetLook=interiorRoom?new THREE.Vector3(0,0,-1):loc==='f7'?new THREE.Vector3(THREE.MathUtils.clamp(p.x,-12,12),0,THREE.MathUtils.clamp(p.z-2,-29,30)):new THREE.Vector3(p.x,0,p.z-2);look.lerp(targetLook,1-Math.exp(-dt*4));camera.position.copy(look).add(offset);camera.lookAt(look);sun.intensity=THREE.MathUtils.lerp(sun.intensity,night?.8:2.1,.025);hemi.intensity=THREE.MathUtils.lerp(hemi.intensity,night?.68:1.25,.025);renderer.toneMappingExposure=THREE.MathUtils.lerp(renderer.toneMappingExposure,night?.9:1.05,.025);scene.background.lerp(new THREE.Color(night?0x293e58:0x516271),.025);
+    if(goal){const g=spots.find(s=>s.id===goal);goalRing.visible=!!g;if(g){const a=sortedApproaches(g,p,q=>isOpen(q.x,q.z))[0]||g;goalRing.position.set(a.x,.09,a.z);goalRing.scale.setScalar(1+Math.sin(elapsed*3)*.1);}}else goalRing.visible=false;renderer.render(scene,camera);return moved;}
   function setPosture(kind,spot){if(kind==='stand'){if(restZoom!==null)camera.zoom=restZoom;restZoom=null;}else{if(restZoom===null)restZoom=camera.zoom;camera.zoom=Math.max(camera.zoom,kind==='lie'?1.45:1.2);}camera.updateProjectionMatrix();restActor.setPosture(kind,spot,(loc==='f5'?SCRUB_ATLASES:SPRITE_ATLASES)[player.userData.character]);}
   function project(s){const v=new THREE.Vector3(s.x,s.height??5.2,s.z).project(camera);const r=canvas.getBoundingClientRect();return{x:(v.x+1)/2*r.width,y:(1-v.y)/2*r.height,visible:v.z<1&&Math.abs(v.x)<1.1&&Math.abs(v.y)<1.15};}
-  function nearest(){return spots.map(s=>({...s,distance:Math.hypot(s.x-player.position.x,s.z-player.position.z)})).filter(s=>s.distance<(s.morningBed?1.2:2.5)).sort((a,b)=>a.distance-b.distance)[0]||null;}
-  function teleportToSpot(id){const s=spots.find(s=>s.id===id);if(!s)return false;let point=null;for(const radius of [0,.25,.5,.75,1]){for(let i=0;i<8;i++){const x=s.x+Math.cos(i*Math.PI/4)*radius,z=s.z+Math.sin(i*Math.PI/4)*radius;if(isOpen(x,z)){point={x,z};break;}}if(point)break;}if(!point)return false;path=[];player.position.set(point.x,0,point.z);followTrail=[];if(companion&&morningState?.escort==='following')companion.position.set(point.x-.8,0,point.z+.8);look.set(point.x,0,point.z);camera.position.copy(look).add(offset);camera.lookAt(look);return true;}
-  return{setPosture,setRage:restActor.setRage,build,update,pick,resize,walkTo,teleportToSpot,project,nearest,setCharacter,setMorning,setWardPatientTask,setClinicTube,setClinicNurseAway,zoomBy(factor){camera.zoom=THREE.MathUtils.clamp(camera.zoom*factor,.8,1.7);camera.updateProjectionMatrix();return camera.zoom;},get spots(){return spots;},get labels(){return labels;},get position(){return{x:player.position.x,z:player.position.z};},get walked(){return walked;},setGoal(id){goal=id;},stop(){path=[];},dispose(){resizeObserver.disconnect();renderer.dispose();}};
+  function nearest(){return spots.map(s=>({...s,distance:distanceToSpot(s)})).filter(s=>s.distance<(s.morningBed?1.2:2.5)).sort((a,b)=>a.distance-b.distance)[0]||null;}
+  function teleportToSpot(id,{opposite=false}={}){const s=spots.find(s=>s.id===id);if(!s)return false;const options=sortedApproaches(s,player.position,q=>isOpen(q.x,q.z));if(opposite)options.reverse();const anchor=options[0]||s;let point=null;for(const radius of [0,.25,.5,.75,1]){for(let i=0;i<8;i++){const x=anchor.x+Math.cos(i*Math.PI/4)*radius,z=anchor.z+Math.sin(i*Math.PI/4)*radius;if(isOpen(x,z)){point={x,z};break;}}if(point)break;}if(!point)return false;path=[];player.position.set(point.x,0,point.z);followTrail=[];if(companion&&morningState?.escort==='following')companion.position.set(point.x-.8,0,point.z+.8);look.set(point.x,0,point.z);camera.position.copy(look).add(offset);camera.lookAt(look);return true;}
+  return{distanceToSpot,walkToSpot,setPosture,setRage:restActor.setRage,build,update,pick,resize,walkTo,teleportToSpot,project,nearest,setCharacter,setMorning,setWardPatientTask,setClinicTube,setClinicNurseAway,zoomBy(factor){camera.zoom=THREE.MathUtils.clamp(camera.zoom*factor,.8,1.7);camera.updateProjectionMatrix();return camera.zoom;},get spots(){return spots;},get labels(){return labels;},get position(){return{x:player.position.x,z:player.position.z};},get walked(){return walked;},setGoal(id){goal=id;},stop(){path=[];},dispose(){resizeObserver.disconnect();renderer.dispose();}};
 }
