@@ -18,7 +18,7 @@ assert.deepEqual(receiveORList(lists,16,16),{ok:true,first:true});assert(!hasORL
 assert.deepEqual(listedNPXTarget(task,13,lists),{dest:'f5',spot:'or-team-circulator'});
 assert.deepEqual(receiveORList(lists,13,13),{ok:true,first:true});assert.deepEqual(receiveORList(lists,13,13),{ok:true,first:false});
 assert.deepEqual(receivedORLists(lists),[13,16]);assert.deepEqual(listedNPXTarget(task,13,lists),{dest:'f5',spot:'operation'});
-for(const [stage,spot] of [['instrument','or-team-scrub'],['handoff','or-team-circulator']]){const t={...task,stage};assert.deepEqual(listedNPXTarget(t,13,lists),{dest:'f5',spot});}
+for(const [stage,spot] of [['instrument','operation'],['handoff','or-team-circulator']]){const t={...task,stage};assert.deepEqual(listedNPXTarget(t,13,lists),{dest:'f5',spot});}
 assert.equal(JSON.stringify(task),before,'Taking/reopening a paper must not reset the procedure');
 syncORList(lists[13],{npxPatient:'許明哲',npxDone:true});assert(lists[13].received);assert.equal(lists[13].rows.find(r=>r.id==='npx').note,'已交接');
 syncORList(lists[13],{npxPatient:'陳子晴',npxDone:false});assert.equal(lists[13].rows.find(r=>r.id==='npx').patient,'陳子晴');assert(lists[13].rows.find(r=>r.id==='npx').active);

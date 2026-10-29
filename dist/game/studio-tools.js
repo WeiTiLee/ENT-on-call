@@ -1,3 +1,4 @@
+import {createRun} from './event-deck.js';
 import {NIGHT_WARD_IDS} from './night-ward-calls.js';
 import {EVENTS,LOCAL_OR_IDS} from './event-pool.js';
 import {MORNING_CASES,createMorning,printPatientList,visitPatient} from './morning-events.js';
@@ -7,7 +8,7 @@ import {orderFood,releaseORDrinks,collectFood} from './meal-breaks.js';
 // The prototype's authoring link is separate from the normal player entry.
 export const studioEnabled=params=>params.get('studio')==='1';
 export const STUDIO_GROUPS=[
-  {title:'白天事件',ids:['rounds','nasal-cleaning','outpatientPaperwork','outpatientNG','outpatientTrach','ng','sudden','booking','contact',...LOCAL_OR_IDS]},
+  {title:'白天事件',ids:['rounds','nasal-cleaning','outpatientPaperwork','outpatientNG','outpatientTrach','ng','sudden','booking','contact',...LOCAL_OR_IDS,'orSenior']},
   {title:'值班事件',ids:['fish','nose','tonsil','airway','blueberry','cockroach','lego','infantfish','bead','cotton','vertigo','otalgia','hoarse','trachcare','nasaltrauma',...NIGHT_WARD_IDS]},
   {title:'科內日常',ids:['lunchOrder','drink','takoyaki','popcorn','missinginfo']}
 ];
@@ -33,7 +34,7 @@ export const STUDIO_DINING_STATES=[['not-ordered','尚未訂飲料'],['waiting',
 const allCases={...EVENTS,...MORNING_CASES};
 export function createStudioEvent(id,seed,{character='male',name='小值'}={}){
   const c=allCases[id];if(!c)throw new Error('找不到這個試玩事件');
-  const morning=id==='rounds'||id==='nasal-cleaning',clock=morning?450:id==='lunchOrder'?990:id==='drink'||LOCAL_OR_IDS.includes(id)?810:STUDIO_GROUPS[1].ids.includes(id)?1140:555;
+  const morning=id==='rounds'||id==='nasal-cleaning',clock=morning?450:id==='lunchOrder'?990:id==='drink'||LOCAL_OR_IDS.includes(id)||id==='orSenior'?810:STUDIO_GROUPS[1].ids.includes(id)?1140:555;
   const s=createState();s.name=name;s.character=character;s.started=true;s.energy=100;s.hunger=100;s.temper=0;s.clock=clock;s.location=c.dest;
   const p={id,case:morning?undefined:id,kind:morning?'morning-work':id==='drink'?'studio-drink':'case',clock,title:c.title,description:'單項試玩；可按「直達下一步」跳到目前的互動位置。',dest:c.dest,spot:c.spot||'nurse',destination:'製作檢視 · '+c.title};
   const phases=id==='rounds'?[{...PHASES.find(p=>p.id==='morning')},p]:[p];
@@ -61,4 +62,17 @@ export function createStudioNightWait(seed,profile={}){
   const s=createStudioEvent('wardOrder',seed,profile),p=s.run.phases[0];s.clock=1445;s.location='g2';
   s.run.phases=[{...PHASES.find(p=>p.id==='sleep')},{...p,clock:1475}];s.run.nightPreview=true;
   return s;
+}
+
+export function createStudioConcurrent(seed,profile={}){
+  const s=createStudioEvent('fish',seed,profile);s.location='g2';
+  s.run.testId=null;s.run.concurrentPreview=true;s.run.ids=['fish','wardOrder','wardExtend'];s.run.total=3;s.run.maxScore=30;
+  s.run.phases=s.run.ids.map((id,i)=>({...createStudioEvent(id,seed,profile).run.phases[0],clock:1140+i*6}));
+  s.run.phases.push({...PHASES.find(p=>p.id==='finish')});return s;
+}
+
+export function createStudioShift(section,seed,profile={}){
+  const run=createRun({seed}),s=createState();Object.assign(s,profile,{started:true,energy:100,hunger:100,temper:0,clock:section==='night'?1035:810,location:section==='night'?'g2':'f5'});
+  const phases=run.phases.filter(p=>p.kind==='case'&&(section==='night'?p.clock>=1020:p.dest==='f5'));
+  s.run={...run,mode:'studio',studio:true,concurrentPreview:true,testId:null,phases:[...phases,{...PHASES.find(p=>p.id==='finish')}],ids:phases.map(p=>p.id),total:phases.length,maxScore:phases.length*10};return s;
 }

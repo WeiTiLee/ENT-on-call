@@ -2,7 +2,7 @@ import {OR_ATTENDINGS} from './staff.js';
 import {seededRandom} from './event-deck.js';
 
 export const NPX_STAGES=['verify','drape','packing','scope','instrument','sample','hemostasis','label','handoff','done'];
-export const NPX_TITLES={verify:'先核對這一台',drape:'簡單鋪單',packing:'止血綿 packing',scope:'內視鏡找 NPX mass',instrument:'向刷手要 biopsy cup',sample:'取得一塊檢體',hemostasis:'棉棒止血',label:'核對檢體標示',handoff:'把檢體交給流動',done:'這一台完成了'};
+export const NPX_TITLES={verify:'先核對這一台',drape:'簡單鋪單',packing:'止血綿 packing',scope:'內視鏡找 NPX mass',instrument:'請刷手遞 biopsy cup',sample:'取得一塊檢體',hemostasis:'棉棒止血',label:'核對檢體標示',handoff:'把檢體交給流動',done:'這一台完成了'};
 export const NPX_PATIENTS=[{id:'P13-01',name:'林予安'},{id:'P13-02',name:'陳子晴'},{id:'P13-03',name:'許明哲'}];
 export const NPX_POINTS=[{x:32,y:37,label:'左上方'},{x:67,y:43,label:'右側'},{x:48,y:70,label:'下方'}];
 export const NPX_TOOLS=[{id:'packing',name:'止血綿'},{id:'cup',name:'Biopsy cup'},{id:'swab',name:'棉棒'}];
@@ -14,7 +14,7 @@ export function createNPX(seed,{practice=false}={}){
 }
 export function requestNPXSupport(t){if(!['scope','sample','hemostasis'].includes(t.stage)||t.seniorJoined)return false;t.supportRequested=true;return true;}
 export function joinNPXSenior(t,room){if(room!==16||!t.supportRequested||t.seniorJoined)return false;t.seniorJoined=true;return true;}
-export function npxSpot(t){return t.stage==='instrument'?'or-team-scrub':t.stage==='handoff'?'or-team-circulator':'operation';}
+export function npxSpot(t){return t.stage==='handoff'?'or-team-circulator':'operation';}
 export function npxTarget(t,room){if(t.supportRequested&&!t.seniorJoined)return{dest:'f5',spot:room===16?'or-team-senior':room?'or-exit':'or-16'};return{dest:'f5',spot:room===13?npxSpot(t):room?'or-exit':'or-13'};}
 export function npxAction(t,action,value){
   if(t.stage==='done')return{ok:false,penalty:false,message:'這一台已完成。'};

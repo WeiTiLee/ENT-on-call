@@ -2,9 +2,9 @@ import {NPX_STAGES,NPX_TITLES,NPX_PATIENTS,NPX_POINTS,NPX_TOOLS} from './npx-bio
 import {npxTool,npxDrape,npxEndoscope,npxSpecimen} from './npx-art.js';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const button=(text,action,value='',extra='')=>`<button class="secondary-button" data-npx-action="${action}" data-npx-value="${value}" ${extra}>${text}</button>`;
-const toolChoices=(action)=>`<div class="npx-tools">${NPX_TOOLS.map(tool=>`<button ${action?`data-npx-action="${action}" data-npx-value="${tool.id}"`:`data-npx-tool="${tool.id}" aria-pressed="false"`} aria-label="${tool.name}">${npxTool(tool.id)}<b>${tool.name}</b></button>`).join('')}</div>`;
+const toolChoices=(action)=>`<div class="npx-tools">${NPX_TOOLS.map(tool=>`<button ${action?`data-npx-action="${action}" data-npx-value="${tool.id}"`:`data-npx-tool="${tool.id}" aria-pressed="false"`} aria-label="${action==='instrument'?'請刷手遞':''}${tool.name}">${npxTool(tool.id)}<b>${action==='instrument'?'請刷手遞':''}${tool.name}</b></button>`).join('')}</div>`;
 export function npxHTML(t,{near=false}={}){
-  const stage=t.stage,index=NPX_STAGES.indexOf(stage),team=stage==='instrument'?'刷手':stage==='handoff'?'流動':null;
+  const stage=t.stage,index=NPX_STAGES.indexOf(stage),team=stage==='handoff'?'流動':null;
   const group=index<3?0:index<7?1:2,tracker=`<span class="npx-step-count">${String(index+1).padStart(2,'0')} / 09</span>`+['準備','操作','交接'].map((name,i)=>`<span class="${i<group?'checked':i===group?'current':''}">${i<group?'✓ ':''}${name}</span>`).join('');
   let art=['scope','instrument','sample','hemostasis'].includes(stage)?npxEndoscope(t):['label','handoff'].includes(stage)?npxSpecimen(t):npxDrape(t),hits='',body='';
   if(!near)body=`<p>${team?`這一步要到${team}身旁，當面接上這一台的工作。`:'先回到手術台，繼續這一台。'}已完成的部分都還在。</p><button id="npxWalk" class="primary-button">${team?'走近'+team:'回到手術台'} →</button>`;
@@ -16,11 +16,11 @@ export function npxHTML(t,{near=false}={}){
     body='<p>先拿止血綿完成 packing，再接內視鏡。</p>'+toolChoices()+`<p id="npxSelected" class="npx-selected" aria-live="polite">先選一樣物品。</p>`;
     hits='<button class="npx-hit packing-hit" data-npx-use="pack" disabled>使用選取物品</button>';
   }else if(stage==='scope'){
-    body='<p>觀察內視鏡畫面，找到不規則的 NPX mass。</p><div class="npx-assist-note">點選畫面上的三個觀察位置。看清楚，再向刷手要器械。</div>';
+    body='<p>觀察內視鏡畫面，找到不規則的 NPX mass。</p><div class="npx-assist-note">點選畫面上的三個觀察位置。看清楚，再請旁邊的刷手遞器械。</div>';
     hits=NPX_POINTS.map((p,i)=>`<button class="npx-hit scope-hit" style="left:${p.x}%;top:${p.y}%" data-npx-action="inspect" data-npx-value="${i}" aria-label="觀察${p.label}"><span>觀察</span></button>`).join('');
-  }else if(stage==='instrument')body='<p>已經看到病灶了。現在向刷手要取檢體的器械。</p>'+toolChoices('instrument');
+  }else if(stage==='instrument')body='<p>刷手就在手術台旁：「需要哪一樣？我遞給你。」</p>'+toolChoices('instrument');
   else if(stage==='sample'){
-    const p=NPX_POINTS[t.mass];body='<p>Biopsy cup 已拿到。對準剛剛確認的病灶，取一塊檢體。</p><div class="npx-held-tool">'+npxTool('cup')+'<span>手上：Biopsy cup</span></div><small>按住畫面按鈕直到亮起，也可選取按鈕後按 Enter。</small>';
+    const p=NPX_POINTS[t.mass];body='<p>刷手把 biopsy cup 遞到你手上。對準剛剛確認的病灶，取一塊檢體。</p><div class="npx-held-tool">'+npxTool('cup')+'<span>手上：Biopsy cup</span></div><small>按住畫面按鈕直到亮起，也可選取按鈕後按 Enter。</small>';
     hits=`<button class="npx-hit hold-hit" style="left:${p.x}%;top:${p.y}%" data-npx-hold="sample" data-npx-value="${t.mass}">按住取檢體</button>`;
   }else if(stage==='hemostasis'){
     const p=NPX_POINTS[t.mass];body='<p>一塊檢體已留下。接著拿棉棒完成這一台的止血。</p>'+toolChoices()+'<p id="npxSelected" class="npx-selected" aria-live="polite">先選一樣物品。</p><small>按住畫面按鈕直到亮起，也可按 Enter。</small>';

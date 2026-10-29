@@ -2,7 +2,7 @@ import {FISH_EVENT} from './fish-case.js';
 import {NIGHT_WARD_EVENTS} from './night-ward-calls.js';
 import {CASES as ORIGINAL_CASES} from './ent-data.js';
 
-export const EVENT_VERSION='14';
+export const EVENT_VERSION='15';
 export const FIXED_ORDER_IDS=['lunchOrder','drink'];
 export const CATEGORIES={urgent:'緊急／時效性會診',routine:'門診與一般工作',odd:'特殊與荒謬情境',daily:'科內日常'};
 const step=(ask,text,reply,bad,why,extra={})=>({ask,options:[{text,reply,good:true,...extra},{text:bad,reply:why}]});
@@ -153,3 +153,8 @@ EVENTS.sudden.requiresDesk=true;EVENTS.sudden.daytime=true;EVENTS.ng.requiresDes
 for(const id of ['ng','trachcare'])EVENTS[id].daytime=true;
 
 EVENTS.outpatientPaperwork.spot='desk';EVENTS.outpatientPaperwork.brief='讀取左右耳四頻聽力、計算障礙比率，選好 b230 分級後交給診間護理師。';
+
+// This is help with an ongoing case in room 16, including after the anaesthesia cutoff.
+EVENTS.orSenior={...EVENTS.orassist,title:'16房學長：過來幫我一下',orRoom:16,localProcedure:undefined,source:'5F · 16房流動',patient:'周映彤 · 正在進行中的扁桃腺手術',call:'這裡是16房流動。學長說等你13房這台收好，過來幫忙拉鉤、抽吸，這台還沒結束。',intro:'學長：「13房那台收好了？來，幫我把視野顧一下。」\n刷手：「要器械跟我說。」',brief:'完成一台13房手術後，流動通知到16房，接上學長正在進行的手術並協助操作。',phone:[{text:'13房這台已收好，我過去16房。',dest:'f5',reply:'流動：「好，是16房，這台還在進行。」'},{text:'收到16房，我先把手邊工作交代好。',dest:'f5',reply:'流動：「學長在16房等你，先把手邊病人安頓好。」'}],steps:[step('進16房，先接哪一段？','核對正在進行的手術與學長交代，再協助視野','學長：「幫我拉鉤、抽吸，慢慢來。」','沒確認就拿器械往前衝','先問清楚這一台目前進度與需要協助的工作。')]};
+EVENTS.orSenior.steps[0].options.find(o=>o.good).action='or';
+export const OR_WORK_IDS=[...LOCAL_OR_IDS,'orSenior'];

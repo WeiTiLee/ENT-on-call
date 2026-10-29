@@ -2,8 +2,8 @@ import {OR_ATTENDINGS} from './staff.js';
 import {seededRandom} from './event-deck.js';
 
 export const LOCAL_PROCEDURES={
-  ear:{name:'耳內注射',patient:{id:'E13-01',name:'王以辰'},attending:OR_ATTENDINGS.ear,order:'耳內注射處置',stages:['verify','local','drape','scope','instrument','inject','rest','check','done'],titles:{verify:'先核對這一台',local:'噴 local',drape:'簡單鋪單',scope:'耳內視鏡確認前下方',instrument:'向刷手拿注射器',inject:'完成本台耳內注射',rest:'交代病人，躺著休息10分鐘',check:'休息後再確認狀況',done:'這一台完成了'}},
-  oral:{name:'Oral biopsy',patient:{id:'O13-01',name:'張宜庭'},attending:OR_ATTENDINGS.oral,order:'口腔檢體病理檢查',stages:['verify','headlamp','drape','inspect','local','instrument','sample','cautery','label','handoff','done'],titles:{verify:'先核對這一台',headlamp:'戴好頭燈',drape:'簡單鋪單',inspect:'看清口腔病灶',local:'完成病灶局部麻醉',instrument:'向刷手拿切片器械',sample:'取下口腔檢體',cautery:'電燒止血',label:'核對口腔檢體標示',handoff:'把檢體交給流動',done:'這一台完成了'}}
+  ear:{name:'耳內注射',patient:{id:'E13-01',name:'王以辰'},attending:OR_ATTENDINGS.ear,order:'耳內注射處置',stages:['verify','local','drape','scope','instrument','inject','rest','check','done'],titles:{verify:'先核對這一台',local:'噴 local',drape:'簡單鋪單',scope:'耳內視鏡確認前下方',instrument:'請刷手遞注射器',inject:'完成本台耳內注射',rest:'交代病人，躺著休息10分鐘',check:'休息後再確認狀況',done:'這一台完成了'}},
+  oral:{name:'Oral biopsy',patient:{id:'O13-01',name:'張宜庭'},attending:OR_ATTENDINGS.oral,order:'口腔檢體病理檢查',stages:['verify','headlamp','drape','inspect','local','instrument','sample','cautery','label','handoff','done'],titles:{verify:'先核對這一台',headlamp:'戴好頭燈',drape:'簡單鋪單',inspect:'看清口腔病灶',local:'完成病灶局部麻醉',instrument:'請刷手遞切片器械',sample:'取下口腔檢體',cautery:'電燒止血',label:'核對口腔檢體標示',handoff:'把檢體交給流動',done:'這一台完成了'}}
 };
 export const LOCAL_TOOLS=[{id:'spray',name:'局部麻醉噴劑'},{id:'syringe',name:'局部麻醉用注射器'},{id:'injection',name:'耳內注射用注射器'},{id:'biopsy',name:'口腔切片器械組'},{id:'cautery',name:'電燒筆'},{id:'swab',name:'棉棒'}];
 export function createLocalOR(kind,seed,{practice=false}={}){
@@ -12,7 +12,7 @@ export function createLocalOR(kind,seed,{practice=false}={}){
   return{kind,practice,patient,attending:c.attending,stage:'verify',drapes:[],lesion:Math.floor(rng()*3),headlamp:false,localized:false,found:false,instrument:false,specimen:false,hemostasis:false,labeled:false,handedOver:false,injected:false,restExplained:false,restStarted:false,restElapsed:0,checked:[],assisted:[],supportRequested:false,seniorJoined:false,orderDraft:{patient:'',procedure:'',attending:''},orderPlaced:false,mistakes:0,feedback:''};
 }
 export const localTitle=t=>LOCAL_PROCEDURES[t.kind].titles[t.stage];
-export function localSpot(t){return t.stage==='instrument'?'or-team-scrub':t.stage==='handoff'?'or-team-circulator':'operation';}
+export function localSpot(t){return t.stage==='handoff'?'or-team-circulator':'operation';}
 export function localTarget(t,room,hasList){if(!hasList)return{dest:'f5',spot:room===13?'or-team-circulator':room?'or-exit':'or-13'};if(t.supportRequested&&!t.seniorJoined)return{dest:'f5',spot:room===16?'or-team-senior':room?'or-exit':'or-16'};return{dest:'f5',spot:room===13?localSpot(t):room?'or-exit':'or-13'};}
 const supportable=t=>(t.kind==='ear'?['scope','inject']:['inspect','sample','cautery']).includes(t.stage);
 export function requestLocalSupport(t){if(!supportable(t)||t.seniorJoined)return false;t.supportRequested=true;return true;}

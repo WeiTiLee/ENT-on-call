@@ -5,7 +5,7 @@ import {studioEnabled,STUDIO_GROUPS,STUDIO_SCENES,STUDIO_EGGS,STUDIO_DINING_STAT
 import {restaurantView,collectFood} from '../dist/game/meal-breaks.js';
 import {foodShelf} from '../dist/game/self-care-ui.js';
 const ids=STUDIO_GROUPS.flatMap(g=>g.ids);
-assert.equal(ids.length,35);assert.equal(new Set(ids).size,35);assert.deepEqual([...ids].sort(),Object.keys({...EVENTS,...MORNING_CASES}).sort());
+assert.equal(ids.length,36);assert.equal(new Set(ids).size,36);assert.deepEqual([...ids].sort(),Object.keys({...EVENTS,...MORNING_CASES}).sort());
 assert(!studioEnabled(new URLSearchParams()));assert(!studioEnabled(new URLSearchParams('studio=0')));assert(!studioEnabled(new URLSearchParams('studio')));assert(studioEnabled(new URLSearchParams('studio=1')));
 for(const id of ids){const s=createStudioEvent(id,'TEST-A',{name:'測試',character:'female'});assert.equal(s.name,'測試');assert.equal(s.character,'female');assert.equal(s.run.testId,id);assert.equal(s.run.total,1);assert.deepEqual(s.run.ids,[id]);assert(!s.explore);assert.equal(s.completed.length,0);assert.equal(s.energy,100);assert.equal(s.food.orders.length,0);assert(s.run.phases.some(p=>p.case===id||p.id===id));}
 assert.equal(createStudioEvent('drink','TEST-A').run.phases[0].orRoom,13);
@@ -17,4 +17,4 @@ assert.deepEqual(states,{'not-ordered':'not-ordered',waiting:'ordered',ready:'re
 assert(!foodShelf({dining:true}).includes('data-eat-supply='));assert(foodShelf({discussion:true}).includes('data-eat-supply="biscuit"'));
 for(const t of [...STUDIO_SCENES,...STUDIO_EGGS]){const s=createStudioSandbox(t,'TEST-A');assert.equal(s.location,t.location);assert.equal(s.orRoom,t.room||null);assert(s.explore);assert.equal(s.completed.length,0);assert.equal(s.side.completed.length,0);}
 assert.throws(()=>createStudioEvent('missing','TEST-A'));assert.throws(()=>createStudioDining('missing','TEST-A'));assert.throws(()=>createStudioSandbox({location:'x1'},'TEST-A'));
-console.log('Studio passed: all 35 isolated trials, morning prerequisites, scene/egg entry, five restaurant states, cup-only empty state, real pickup and repeat prevention.');
+console.log('Studio passed: all 36 isolated trials, morning prerequisites, scene/egg entry, five restaurant states, cup-only empty state, real pickup and repeat prevention.');

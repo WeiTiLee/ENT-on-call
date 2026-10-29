@@ -18,7 +18,6 @@ export const PHASES=[
   {id:'day-or',kind:'operation',clock:600,title:'刀房在等你',description:'先到 F 棟，再搭電梯上五樓。這一段，學長會陪你做。',dest:'f5',spot:'operation',destination:'F 棟 5 樓 · 刀房'},
   {id:'blueberry',kind:'case',clock:840,title:'會診標題：藍莓',description:'這次需要去急診現場。先聽完整資訊，再決定下一步。',case:'blueberry',dest:'f1',spot:'patient',destination:'1F 急診 · 會診區'},
   {id:'nose',kind:'case',clock:960,title:'鼻血與衛生紙',description:'一整包衛生紙，不等於一份完整病史。先補齊資訊。',case:'nose',dest:'g2',spot:'patient',destination:'2G 初診間'},
-  {id:'night',kind:'handover',clock:1050,title:'白天結束，值班開始',description:'回護理站短交班。今晚的待辦，還沒介紹自己。',dest:'f7',spot:'nurse',destination:'7F 病房 · 護理站'},
   {id:'dinner',kind:'break',clock:1080,title:'晚餐便當到了，先吃一口',description:'18:00 後便當送到 7F 護理站。領取自己訂的便當；若先忙，餐點仍留在待辦。',dest:'f7',spot:'nurse',destination:'7F 病房 · 護理站'},
   {id:'popcorn',kind:'social',clock:1110,title:'爆米花口味投票',description:'電話響了。這通的三個選項，可能還有附件。',dest:'g2',spot:'desk',destination:'電話回覆即可'},
   {id:'tonsil',kind:'case',clock:1200,title:'術後病人出血了',description:'病房有需要及時評估的狀況。到現場，並找齊團隊。',case:'tonsil',dest:'f7',spot:'patient',destination:'7F 病房 · 7F23'},

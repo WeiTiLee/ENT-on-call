@@ -16,10 +16,10 @@ for(let seed=0;seed<120;seed++){
   npxAction(t,'pack','cup');assert.equal(t.stage,'packing');
   npxAction(t,'pack','packing');assert.equal(t.stage,'scope');assert(t.packed);
   const errors=t.mistakes;npxAction(t,'inspect',(t.mass+1)%3);assert.equal(t.mistakes,errors);assert.equal(t.stage,'scope');
-  npxAction(t,'inspect',t.mass);assert(t.found);assert.equal(npxSpot(t),'or-team-scrub');
-  assert.deepEqual(npxTarget(t,null),{dest:'f5',spot:'or-13'});assert.deepEqual(npxTarget(t,13),{dest:'f5',spot:'or-team-scrub'});assert.deepEqual(npxTarget(t,16),{dest:'f5',spot:'or-exit'});
+  const table=npxTarget(t,13);npxAction(t,'inspect',t.mass);assert(t.found);assert.deepEqual(npxTarget(t,13),table,'Requesting an instrument stays at the operating table');assert(npxHTML(t,{near:true}).includes('請刷手遞'));assert(!npxHTML(t,{near:true}).includes('id="npxWalk"'));assert.equal(npxSpot(t),'operation');
+  assert.deepEqual(npxTarget(t,null),{dest:'f5',spot:'or-13'});assert.deepEqual(npxTarget(t,13),{dest:'f5',spot:'operation'});assert.deepEqual(npxTarget(t,16),{dest:'f5',spot:'or-exit'});
   npxAction(t,'instrument','swab');assert.equal(t.stage,'instrument');assert(!t.cup);
-  npxAction(t,'instrument','cup');assert.equal(t.stage,'sample');assert(t.cup);
+  npxAction(t,'instrument','cup');assert.equal(t.stage,'sample');assert(t.cup);assert.deepEqual(npxTarget(t,13),table,'The passed instrument is immediately usable at the same table');
   npxAction(t,'sample',(t.mass+1)%3);assert(!t.specimen);
   npxAction(t,'sample',t.mass);assert.equal(t.stage,'hemostasis');assert(t.specimen);
   assert.equal(npxAction(t,'sample',t.mass).ok,false,'Only one specimen is taken');
@@ -37,7 +37,7 @@ assert.deepEqual(npxTarget(t,13),{dest:'f5',spot:'or-exit'});assert.deepEqual(np
 assert.equal(joinNPXSenior(t,13),false);assert.equal(t.stage,'scope');assert(joinNPXSenior(t,16));assert.equal(joinNPXSenior(t,16),false);assert.deepEqual(npxTarget(t,16),{dest:'f5',spot:'or-exit'});
 assert(npxAction(t,'support').supported);assert.equal(t.stage,'instrument');assert.equal(npxAction(t,'support').ok,false,'Support must not skip the scrub handoff');npxAction(t,'instrument','cup');npxAction(t,'support');npxAction(t,'support');assert.equal(t.stage,'label');assert.equal(t.mistakes,0);assert.equal(t.assisted.length,3);assert.equal(npxAction(t,'handoff').ok,false,'Support still needs a correct label and physical handoff');
 assert.equal(EVENTS.orassist.orRoom,13);assert(EVENTS.orassist.call.includes('NPX biopsy'));assert(EVENTS.orassist.source.includes('流動'));
-for(let seed=0;seed<30;seed++){const run=createRun({seed:'NPX-RUN-'+seed});assert.equal(run.ids.filter(id=>LOCAL_OR_IDS.includes(id)).length,1);assert(run.total===18);assert.equal(run.phases.find(p=>LOCAL_OR_IDS.includes(p.case)).clock,810);}
+for(let seed=0;seed<30;seed++){const run=createRun({seed:'NPX-RUN-'+seed});assert.equal(run.ids.filter(id=>LOCAL_OR_IDS.includes(id)).length,run.orPlan.kind==='three-local'?3:2);assert(run.total===27);assert.equal(run.phases.find(p=>LOCAL_OR_IDS.includes(p.case)).clock,810);}
 for(const stage of NPX_STAGES.slice(0,-1)){const task=createNPX('art');task.stage=stage;const html=npxHTML(task,{near:true});assert(html.includes('id="modalTitle"'));assert(!html.includes('undefined'));}
 for(const art of [npxDrape(t),npxEndoscope(t),npxSpecimen(t)])assert(art.includes('<svg')&&art.includes('role="img"'));
 console.log('NPX biopsy passed: 120 seeded patients/views, ordered work, physical team targets, wrong-tool/label checks, inspection without penalty, support without skipping handoffs, one specimen and one completion, resumable state and unchanged event count.');

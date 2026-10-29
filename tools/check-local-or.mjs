@@ -26,7 +26,7 @@ for(let i=0;i<100;i++)for(const kind of ['ear','oral']){
   assert(!localAction(t,'support').ok);assert.equal(t.stage,kind==='ear'?'scope':'inspect');assert(joinLocalSenior(t,16));assert(!joinLocalSenior(t,16));
   if(i%2)assert(localAction(t,'support').supported);else{assert(!localAction(t,'inspect',kind==='ear'?'posterior-superior':(t.lesion+1)%3).ok);assert(localAction(t,'inspect',kind==='ear'?'anterior-inferior':t.lesion).ok);}
   if(kind==='oral'){assert(!localAction(t,'local','spray').ok);assert(localAction(t,'local','syringe').ok);}
-  assert.equal(localSpot(t),'or-team-scrub');assert(!localAction(t,'support').ok,'Support cannot skip the instrument handoff');assert(!localAction(t,'instrument','swab').ok);assert(localAction(t,'instrument',kind==='ear'?'injection':'biopsy').ok);
+  const table={dest:'f5',spot:'operation'};assert.deepEqual(localTarget(t,13,true),table,'The scrub passes tools without a trip away from the table');assert(localHTML(t,{near:true}).includes('請刷手遞'));assert(!localHTML(t,{near:true}).includes('id="localWalk"'));assert.equal(localSpot(t),'operation');assert(!localAction(t,'support').ok,'Support cannot skip the instrument handoff');assert(!localAction(t,'instrument','swab').ok);assert(localAction(t,'instrument',kind==='ear'?'injection':'biopsy').ok);assert.deepEqual(localTarget(t,13,true),table,'Continue operating immediately after the scrub passes the tool');
   if(kind==='ear'){
     assert(!localAction(t,'inject','posterior-inferior').ok);assert(localAction(t,'inject','anterior-inferior').ok);assert(t.injected);assert(!localAction(t,'start-rest').ok);assert(!tickLocalRest(t,100));
     localAction(t,'explain-rest');assert.equal(t.feedback,'');localAction(t,'start-rest');assert.equal(t.feedback,'');tickLocalRest(t,4);assert(!localAction(t,'finish-rest').ok);assert(!tickLocalRest(t,NaN));
@@ -40,7 +40,7 @@ for(let i=0;i<100;i++)for(const kind of ['ear','oral']){
   for(const stage of config.stages.slice(0,-1)){const view={...t,stage};assert(!localHTML(view,{near:true}).includes('undefined'));assert(localVisual(view).includes('<svg'));}
 }
 for(let i=0;i<150;i++){
-  const run=createRun({seed:'LOCAL-RUN-'+i});const selected=run.ids.filter(id=>LOCAL_OR_IDS.includes(id));assert.equal(selected.length,1);seen.add(selected[0]);assert.equal(run.phases.find(p=>p.case===selected[0]).clock,810);assert.equal(run.total,18);assert.equal(new Set(run.ids).size,run.total);
+  const run=createRun({seed:'LOCAL-RUN-'+i});const selected=run.ids.filter(id=>LOCAL_OR_IDS.includes(id));assert.equal(selected.length,run.orPlan.kind==='three-local'?3:2);seen.add(selected[0]);assert.equal(run.phases.find(p=>p.case===selected[0]).clock,810);assert.equal(run.total,27);assert.equal(new Set(run.ids).size,run.total);
   const decks=partyDecks('LOCAL-PARTY-'+i);assert.equal(new Set(Object.values(decks).flatMap(ids=>ids.filter(id=>LOCAL_OR_IDS.includes(id)))).size,3);
 }
 assert.equal(seen.size,3);assert.equal(lesions.size,3);assert.deepEqual(createState().localOR,{});assert.equal(createState().activeORProcedure,null);assert.equal(createLocalOR('other','test'),null);
