@@ -15,10 +15,10 @@ for(let seed=0;seed<100;seed++){
   const snapshot=JSON.stringify({visited:m.visited,escort:m.escort,cleaned:m.cleaned});m.focus='call';assert.equal(morningTarget(m),null);assert(!wardWorkFocused(m));m.firstCallDone=true;assert(!wardWorkFocused(m));assert(m.active);m.focus='rounds';assert(wardWorkFocused(m));m.focus='call';assert.equal(JSON.stringify({visited:m.visited,escort:m.escort,cleaned:m.cleaned}),snapshot);assert(!morningReady(m));
   for(const p of m.list){visitPatient(m,p.id);const spot=bedApproach(p.room,p.bed),r=wardRect(wardRooms.find(r=>r.id===p.room));assert(spot&&Math.abs(spot.x-r.x)<r.w/2&&Math.abs(spot.z-r.z)<r.d/2);assert(bedLabel(p).startsWith(p.room));}
   assert(cleanPatch(m,1));assert(cleanPatch(m,2));m.escort='done';assert(morningReady(m));
-  for(const team of ['A','B','C']){const run=createRun({mode:'party',seed:code,team});assert.equal(run.total,12);assert.deepEqual(run.categories,PARTY_QUOTA);assert.equal(run.phases[0].clock,450);assert.equal(run.phases[1].kind,'morning-work');assert.equal(run.phases.at(-1).clock,1890);}
+  for(const team of ['A','B','C']){const run=createRun({mode:'party',seed:code,team});assert.equal(run.total,12);assert.deepEqual(run.categories,PARTY_QUOTA);assert.equal(run.phases[0].clock,440);assert.equal(run.phases[1].kind,'morning-work');assert.equal(run.phases.at(-1).clock,1890);}
 }
 assert(lists.size>1);assert.equal(bedApproach('7F19',2),null);
-console.log('Morning passed: exact bed/list matching, seeded lists, no duplicate credit, escort prerequisites, interrupted cleaning resume, 07:30–07:30 timeline and 12-event party scoring.');
+console.log('Morning passed: exact bed/list matching, seeded lists, no duplicate credit, escort prerequisites, interrupted cleaning resume, 07:20–07:30 timeline and 12-event party scoring.');
 
 import {createSideActivities,activityKey,finishSideActivity,attemptPassword} from '../dist/game/side-activities.js';
 const side=createSideActivities(),password=side.password;

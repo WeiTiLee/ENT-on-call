@@ -72,7 +72,7 @@ export function createStudioConcurrent(seed,profile={}){
 }
 
 export function createStudioShift(section,seed,profile={}){
-  const run=createRun({seed}),s=createState();Object.assign(s,profile,{started:true,energy:100,hunger:100,temper:0,clock:section==='night'?1035:810,location:section==='night'?'g2':'f5'});
+  const run=createRun({seed}),s=createState();Object.assign(s,profile,{started:true,energy:100,hunger:100,temper:0,clock:section==='night'?1065:810,location:section==='night'?'g2':'f5'});
   const phases=run.phases.filter(p=>p.kind==='case'&&(section==='night'?p.clock>=1020:p.dest==='f5'));
   s.run={...run,mode:'studio',studio:true,concurrentPreview:true,testId:null,phases:[...phases,{...PHASES.find(p=>p.id==='finish')}],ids:phases.map(p=>p.id),total:phases.length,maxScore:phases.length*10};return s;
 }

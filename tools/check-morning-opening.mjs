@@ -1,17 +1,24 @@
 import assert from 'node:assert/strict';
-import {createMorningOpening,checkMorningCalendar,openingTarget,conferenceQuestions,beginConference,answerConference} from '../dist/game/morning-opening.js';
-import {createMorning,printPatientList} from '../dist/game/morning-events.js';
+import {createMorningOpening,calendarToday,calendarEntry,calendarCells,checkMorningCalendar,openingTarget,conferencePaper,CONFERENCE_TYPES,CONFERENCE_PAPERS,beginConference,nextConferenceSlide,answerConference,inDiscussionRoom,tickConference,conferenceCall,openingClockRate} from '../dist/game/morning-opening.js';
+import {calendarHTML,paperSlideHTML} from '../dist/game/morning-opening-ui.js';
+import {WARD_PLAN,wardRect} from '../dist/game/ward-plan.js';
 import {perimeterApproaches,spotDistance,sortedApproaches} from '../dist/game/interaction-points.js';
-const variants=new Set();
-for(let i=0;i<150;i++){
- const seed='CALENDAR-'+i,o=createMorningOpening(seed),m=createMorning(seed);variants.add(o.conference);assert.deepEqual(o,createMorningOpening(seed));assert.equal(openingTarget(o).spot,'computer');assert(!beginConference(o));assert(!answerConference(o,m,0));assert(checkMorningCalendar(o));assert(!checkMorningCalendar(o));assert(!m.printed);
- if(o.conference){assert.equal(openingTarget(o).spot,'conference');assert(beginConference(o));const qs=conferenceQuestions(m);assert.equal(qs.length,2);assert(!answerConference(o,m,1));assert.equal(o.question,0);assert.equal(o.mistakes,1);assert(answerConference(o,m,0));o.focused=false;assert.equal(openingTarget(o),null);assert.equal(o.question,1);o.focused=true;assert.equal(openingTarget(o).spot,'conference');assert(answerConference(o,m,0));assert.equal(o.stage,'done');assert(!o.focused);assert(!answerConference(o,m,0));}else{assert.equal(o.stage,'done');assert(!beginConference(o));}
- assert.equal(openingTarget(o),null);assert(printPatientList(m));assert(m.printed);
+const today='2026-10-31',variants=new Set(),types=new Set(),papers=new Set();
+for(let i=0;i<180;i++){
+ const seed='CALENDAR-'+i,o=createMorningOpening(seed,{today});variants.add(o.conference);types.add(o.type);papers.add(o.paperId);assert.deepEqual(o,createMorningOpening(seed,{today}));assert.equal(openingTarget(o).spot,'computer');assert(!o.checked);assert(!beginConference(o,450));assert(!answerConference(o,0));
+ assert(checkMorningCalendar(o));assert(!checkMorningCalendar(o));assert.equal(calendarEntry(o,today)?.id,o.conference?o.type:undefined);
+ if(o.conference){assert.equal(openingTarget(o).spot,'conference');assert(!beginConference(o,449));assert.deepEqual(tickConference(o,449,{present:true}),[]);assert.deepEqual(tickConference(o,450,{present:true}),[]);assert.equal(o.attendance,'on-time');assert(beginConference(o,450));assert(!beginConference(o,450));
+  const paper=conferencePaper(o);assert.equal(paper.slides.length,3);for(let j=0;j<3;j++){assert.equal(o.slide,j);assert(paperSlideHTML(o).includes('科內虛構'));assert(nextConferenceSlide(o));}assert.equal(o.stage,'questions');assert(!nextConferenceSlide(o));assert(!answerConference(o,1));assert.equal(o.question,0);assert.equal(o.mistakes,1);assert(answerConference(o,0));o.focused=false;assert.equal(openingTarget(o),null);o.focused=true;assert.equal(o.question,1);assert(answerConference(o,0));assert.equal(o.stage,'done');assert(!o.focused);assert(!answerConference(o,0));assert.deepEqual(tickConference(o,500),[]);
+ }else{assert.equal(o.stage,'done');assert(!beginConference(o,450));assert.deepEqual(tickConference(o,500),[]);}assert.equal(openingTarget(o),null);
 }
-assert.equal(variants.size,2);
-const spot={x:0,z:3,approaches:perimeterApproaches(0,0,4,2,1)};
-for(const p of [{x:0,z:2},{x:0,z:-2},{x:3,z:0},{x:-3,z:0}])assert.equal(spotDistance(spot,p),0);
-assert(Math.abs(spotDistance(spot,{x:0,z:-2},p=>p.z>=0)-Math.sqrt(13))<1e-10);
-assert.equal(sortedApproaches(spot,{x:0,z:-8})[0].z,-2);
-assert.equal(spotDistance(spot,{x:0,z:0},()=>false),Infinity);
-console.log('Morning opening passed: 150 reproducible schedules, both calendar routes, report prerequisite, wrong answers, resumable questions, no duplicate completion; four object approaches and blocked-side filtering.');
+assert.equal(variants.size,2);assert.equal(types.size,4);assert.equal(papers.size,3);assert.equal(CONFERENCE_TYPES.length,4);assert.equal(CONFERENCE_PAPERS.length,3);
+for(const iso of ['2026-02-15','2024-02-29','2026-12-31','2027-01-01']){const [year,month]=iso.split('-').map(Number),cells=calendarCells(year,month-1);assert.equal(cells.length,42);assert.equal(new Set(cells.map(d=>d.date)).size,42);assert(cells.some(d=>d.date===iso));assert.equal(new Date(cells[0].date+'T12:00:00Z').getUTCDay(),0);}
+assert.equal(calendarToday(new Date('2026-10-30T16:30:00Z')),today);
+const o=createMorningOpening('HTML',{today,conference:true}),view={year:2026,month:9};const before=calendarHTML(o,view);assert(before.includes('先點選「今天」'));assert(!before.includes('今日報告 paper'));assert(before.includes('data-calendar-date="2026-10-31"'));assert(!o.checked);checkMorningCalendar(o);assert(calendarHTML(o,{...view,selected:today}).includes(conferencePaper(o).title));
+const late=createMorningOpening('LATE',{conference:true,today});checkMorningCalendar(late);assert.deepEqual(tickConference(late,451),['late']);assert.deepEqual(tickConference(late,452),[]);tickConference(late,453,{present:true});assert.equal(late.attendance,'late');assert.equal(conferenceCall(late,'late').kind,'conference');assert.equal(conferenceCall(late,'late').penalty,8);assert(beginConference(late,453));
+const missed=createMorningOpening('MISSED',{conference:true,today});assert.deepEqual(tickConference(missed,470),['missed']);assert.equal(missed.stage,'missed');assert(!openingTarget(missed));assert.deepEqual(tickConference(missed,480),[]);checkMorningCalendar(missed);assert.equal(missed.stage,'missed');assert(!beginConference(missed,480));assert.equal(conferenceCall(missed,'missed').penalty,12);
+const left=createMorningOpening('LEFT',{conference:true});checkMorningCalendar(left);tickConference(left,448,{present:true});tickConference(left,449,{present:false});assert.deepEqual(tickConference(left,451),['late']);tickConference(left,452,{present:true});assert.equal(left.attendance,'late');assert.deepEqual(tickConference(left,465),['missed']);
+const r=wardRect(WARD_PLAN.core.find(r=>r.id==='討論室'));assert(inDiscussionRoom('f7',r));assert(!inDiscussionRoom('g2',r));assert(!inDiscussionRoom('f7',{x:r.x+r.w,z:r.z}));
+assert.equal(openingClockRate({opening:o,clock:440}),.1);assert.equal(openingClockRate({opening:o,clock:455}),.2);assert.equal(openingClockRate({clock:440}),null);
+const spot={x:0,z:3,approaches:perimeterApproaches(0,0,4,2,1)};for(const p of [{x:0,z:2},{x:0,z:-2},{x:3,z:0},{x:-3,z:0}])assert.equal(spotDistance(spot,p),0);assert.equal(sortedApproaches(spot,{x:0,z:-8})[0].z,-2);assert.equal(spotDistance(spot,{x:0,z:0},()=>false),Infinity);
+console.log('Morning calendar passed: 180 reproducible schedules, four meeting types, three complete papers, today-click gating, month/leap/year grids, Taiwan date, on-time/late/missed/left-room paths, one-time scolding, resumable slides/questions and blocked-side interaction.');

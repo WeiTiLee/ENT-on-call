@@ -47,7 +47,7 @@ export function buildTimeline(ids,seed='NIGHT'){
     const orders=ward.filter(id=>nightCaseId(id)==='wardOrder'),main=[...night];let useMain=true;
     for(let i=0;i<jobs.length;i++)if(!jobs[i]){jobs[i]=(useMain?main.shift()||orders.shift():orders.shift()||main.shift());useMain=!useMain;}
   }else{const positions=[1,Math.floor(jobs.length/2),jobs.length-2];ward.forEach((id,i)=>jobs[positions[i]]=id);let n=0;for(let i=0;i<jobs.length;i++)if(!jobs[i])jobs[i]=night[n++];}
-  const nightCalls=busy?jobs.map((id,i)=>({id,clock:Math.round(1035+i*810/(jobs.length-1))})):ward.length?jobs.map((id,i)=>({id,clock:Math.round(1110+i*720/Math.max(1,jobs.length-1)+(i&&i<jobs.length-1?Math.round(rng()*12)-6:0))})):night.map((id,i)=>({id,clock:Math.round(1110+i*690/Math.max(1,night.length-1))}));
+  const nightCalls=busy?jobs.map((id,i)=>({id,clock:Math.round(1065+i*780/(jobs.length-1))})):ward.length?jobs.map((id,i)=>({id,clock:Math.round(1110+i*720/Math.max(1,jobs.length-1)+(i&&i<jobs.length-1?Math.round(rng()*12)-6:0))})):night.map((id,i)=>({id,clock:Math.round(1110+i*690/Math.max(1,night.length-1))}));
   const requests=shuffle(WARD_ORDER_REQUESTS,seededRandom(seed+'|ward-orders'));let requestIndex=0;
   const scheduled=[{id:outpatient,clock:510},...clinic.map((id,i)=>({id,clock:id==='booking'?690:555+i*35})),{id:'lunchOrder',clock:990},{id:'dinner-break',clock:1080},...day.map((id,i)=>({id,clock:930+i*35})),...orEvents.map((id,i)=>({id,clock:id==='orSenior'?813:810+i*40,...(id==='orSenior'?{afterCase:orEvents[0]}:{})})),...nightCalls].sort((a,b)=>a.clock-b.clock);
   let slept=false;

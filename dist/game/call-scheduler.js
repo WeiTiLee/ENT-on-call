@@ -1,3 +1,5 @@
+import {dayClockRate,spendShiftTime} from './day-pacing.js';
+import {openingClockRate} from './morning-opening.js';
 // Phone arrivals follow the shift clock; selected work is a separate, resumable context.
 const WORK_FIELDS=['accepted','activeDest','caseStep','caseMode','awaitingDesk','clinicCallDeferred','activeORProcedure'];
 const defaults={accepted:false,activeDest:null,caseStep:0,caseMode:'patient',awaitingDesk:false,clinicCallDeferred:false,activeORProcedure:null};
@@ -29,8 +31,8 @@ export function releaseDueCalls(s){
 export function tickShiftClock(s,dt){
   if(!parallelCalls(s)||!s.started||s.ending||!Number.isFinite(dt)||dt<=0||['welcome','pause','help','vital-rules','studio','supply','travel','rage','end'].includes(s.mode))return false;
   // Reading or doing a procedure still takes time; pause and authoring tools stop the clock.
-  const rate=s.care.posture==='lie'?(s.care.nightRest?6:2):s.run.phases[s.phase]?.kind==='morning-work'?2:1.2;
-  s.clock=Math.min(1890,s.clock+dt*rate);return true;
+  const rate=openingClockRate(s)??dayClockRate(s)??(s.care.posture==='lie'?(s.care.nightRest?6:2):s.run.phases[s.phase]?.kind==='morning-work'?2:1.2);
+  spendShiftTime(s,dt*rate);return true;
 }
 export function idlePhase(s){
   const phases=s.run.phases,d=dispatchState(s);

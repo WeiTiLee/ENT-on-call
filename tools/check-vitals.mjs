@@ -4,7 +4,7 @@ import {VITAL_RULES,SUPPLIES,changeVitals,refreshNeeds,workVitals,beginRest,endR
 import {vitalRulesHTML,foodShelf,scoreBreakdown} from '../dist/game/self-care-ui.js';
 const chair={id:'clinic-chair',restPose:'sit'},bed={id:'sleep',restPose:'lie'};
 const s=createState();changeVitals(s,{energy:-1000,hunger:-1000});assert.equal(s.energy,0);assert.equal(s.hunger,0);assert.equal(refreshNeeds(s),'food');assert(s.care.energyLock&&s.care.hungerLock);assert(!endRest(s));
-assert(eatSupply(s,'biscuit'));assert.equal(s.hunger,25);assert.equal(refreshNeeds(s),'rest');assert(!s.care.hungerLock);assert.equal(s.clock,455);
+assert(eatSupply(s,'biscuit'));assert.equal(s.hunger,25);assert.equal(refreshNeeds(s),'rest');assert(!s.care.hungerLock);assert.equal(s.clock,445);
 assert(beginRest(s,chair));assert(!endRest(s));tickVitals(s,10);assert.equal(s.energy,23);assert(!endRest(s));tickVitals(s,5);assert(s.energy>=30);assert(endRest(s));assert.equal(s.care.posture,'stand');
 const a=createState(),b=createState();a.energy=b.energy=30;a.hunger=b.hunger=70;a.temper=b.temper=60;beginRest(a,bed);beginRest(b,bed);tickVitals(a,10);for(let i=0;i<100;i++)tickVitals(b,.1);for(const key of ['energy','hunger','temper'])assert(Math.abs(a[key]-b[key])<1e-8,'Recovery is independent of frame length');
 assert.equal(Math.round(a.energy),60);assert.equal(Math.round(a.temper),52);const snapshot=JSON.stringify(a);tickVitals(a,10,{active:false});assert.equal(JSON.stringify(a),snapshot,'Pause and rules freeze resources');
