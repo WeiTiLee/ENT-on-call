@@ -2,13 +2,13 @@ import {FISH_EVENT} from './fish-case.js';
 import {NIGHT_WARD_EVENTS} from './night-ward-calls.js';
 import {CASES as ORIGINAL_CASES} from './ent-data.js';
 
-export const EVENT_VERSION='15';
+export const EVENT_VERSION='16';
 export const FIXED_ORDER_IDS=['lunchOrder','drink'];
 export const CATEGORIES={urgent:'緊急／時效性會診',routine:'門診與一般工作',odd:'特殊與荒謬情境',daily:'科內日常'};
 const step=(ask,text,reply,bad,why,extra={})=>({ask,options:[{text,reply,good:true,...extra},{text:bad,reply:why}]});
 const clinicSource='1F 急診 · 柏宇醫師';
 function medical({title,category='routine',dest='g2',spot='patient',source=clinicSource,patient,call,intro,phoneText,phoneBad,phoneWhy,steps,brief}){
-  return{title,category,dest,spot,source,patient,call,intro,steps,brief,tag:CATEGORIES[category],urgent:category==='urgent',
+  return{title,category,dest,spot,source,patient,call,intro,steps,brief,callType:'consult',tag:CATEGORIES[category],urgent:category==='urgent',
     phone:[{text:phoneText||'補齊病況與經過，確認地點後到場評估',dest,reply:'資訊已補齊，請到 '+({g2:'2G 初診間',f1:'1F 急診',f7:'7F 病房'}[dest]||dest)+'。',support:category==='urgent'},
       {text:phoneBad,why:phoneWhy},{text:'沒有確認病況，只回「晚點再說」',why:'先問清楚目前病況、地點與聯絡方式，再安排處理。'}]};
 }
@@ -23,7 +23,7 @@ const destOf={fish:'g2',blueberry:'f1',nose:'g2',tonsil:'f7',cockroach:'g2',airw
 const briefOf={fish:'魚刺、病史與最後一餐的誓言。',blueberry:'會診單只有兩個字，呼吸狀況不能只看標題。',nose:'衛生紙的量不能代替完整評估。',tonsil:'術後出血到場評估，接上學長與刀房。',cockroach:'耳朵裡的不速之客，取出後睡意也不見了。',airway:'急診、麻醉與學長共同到場，確認分工。'};
 export const EVENTS={
   ...NIGHT_WARD_EVENTS,
-  ...Object.fromEntries(Object.entries(ORIGINAL_CASES).map(([id,c])=>[id,{...c,category:categoryOf[id],dest:destOf[id],spot:'patient',orRoom:['tonsil','airway'].includes(id)?16:undefined,brief:briefOf[id]}])),
+  ...Object.fromEntries(Object.entries(ORIGINAL_CASES).map(([id,c])=>[id,{...c,callType:'consult',category:categoryOf[id],dest:destOf[id],spot:'patient',orRoom:['tonsil','airway'].includes(id)?16:undefined,brief:briefOf[id]}])),
   fish:FISH_EVENT,
   sudden:medical({title:'病房會診：突然聽不到',category:'urgent',dest:'g2',source:'院內病房 · 病房護理師',patient:'成人 · 突然出現單側聽力下降',
     call:'病人說聽不清楚，目前狀況穩定，想請 ENT 評估。發作時間與左／右／雙耳還需要問清楚。',
@@ -139,6 +139,7 @@ export const EVENTS={
     steps:[step('先確認這一台的資料','核對病人與 NPX biopsy 工作內容，再開始','核對後接續鋪單、packing、找病灶與器械交接。','還沒確認就開始拿器械','先把這一台的病人與工作對好。')]}),
   lunchOrder:daily({title:'晚餐便當，要訂哪一個？',dest:'f7',spot:'nurse',source:'7F 病房 · 可晴護理師',phoneOnly:true,call:'醫師，晚餐便當要收單了！正式值班前先幫你訂。你要雞腿、排骨還是蔬食？18:00 後放護理站，記得來吃。',brief:'16:30 病房固定來電訂晚餐，18:00 後到護理站領取。',
     phone:['雞腿','排骨','蔬食'].map(flavor=>({text:flavor+'便當，謝謝。',dest:'f7',reply:'可晴：「'+flavor+'便當，記好了。18:00 後放護理站，先吃飽再忙。」',effect:{meal:true,mealName:flavor+'便當'}}))}),
+  newPatient:{...daily({title:'病房 new pa call',dest:'f7',source:'7F 病房 · 可晴護理師',phoneOnly:true,call:'醫師，new pa 到病房了，7F11B 林予澄，原訂住院準備明天手術，入院資料在線上病歷。先跟你通知一下。',brief:'病房通知新住院病人抵達，確認姓名、床號與住院目的；先完成通知回覆，收病人流程後續再完善。',phone:[{text:'收到，7F11B 林予澄，明天手術；入院資料我會看。',dest:'f7',reply:'可晴：「對，7F11B 林予澄，資料在線上病歷。」'},{text:'先確認新病人的姓名、床號與住院目的。',dest:'f7',reply:'可晴：「林予澄、7F11B，原訂住院準備明天手術。先通知你病人到了。」'}]}),callType:'new-patient',tag:'病房新住院通知'},
   missinginfo:daily({title:'會診內容只有：ENT',source:'院內分機 · 尚待確認',phoneOnly:true,call:'喂，ENT 嗎？這邊有一個……欸等一下。',brief:'先把來電地點、病況與回撥方式問回來。',
     phone:[{text:'確認來電單位、病人現況、問題與回撥分機。',dest:'g2',reply:'資訊終於補齊，已聯絡正確負責團隊。\n你心想：完整的會診，有時候要從重新認識彼此開始。'},{text:'猜一個樓層，直接出發。',why:'地點與狀況都不清楚，先釐清再安排。'},{text:'只回「我就是」，然後一起沉默。',why:'先問清單位、現況、問題與聯絡方式。'}]})
 };
@@ -149,6 +150,7 @@ EVENTS.orassist.localProcedure='npx';EVENTS.orEar=localCall('ear','耳內注射'
 export const LOCAL_OR_IDS=['orassist','orEar','orOral'];
 export const OUTPATIENT_IDS=['outpatientPaperwork','outpatientTrach','outpatientNG'];
 EVENTS.orassist.category='routine';EVENTS.orassist.tag='下午刀房工作';
+EVENTS.fish.callType='consult';EVENTS.missinginfo.callType='consult';
 EVENTS.sudden.requiresDesk=true;EVENTS.sudden.daytime=true;EVENTS.ng.requiresDesk=true;EVENTS.missinginfo.requiresDesk=true;
 for(const id of ['ng','trachcare'])EVENTS[id].daytime=true;
 

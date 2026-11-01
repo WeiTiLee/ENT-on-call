@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import {createRun} from '../dist/game/event-deck.js';
 import {createState} from '../dist/game/ent-data.js';
-import {createStudioConcurrent,createStudioEvent} from '../dist/game/studio-tools.js';
-import {parallelCalls,dispatchState,pendingWork,selectWork,releaseDueCalls,tickShiftClock,idlePhase,tickCallTimers} from '../dist/game/call-scheduler.js';
+import {createStudioConcurrent,createStudioEvent,createStudioORCalls} from '../dist/game/studio-tools.js';
+import {EVENTS} from '../dist/game/event-pool.js';
+import {parallelCalls,dispatchState,pendingWork,selectWork,releaseDueCalls,tickShiftClock,idlePhase,tickCallTimers,callAllowed,deferCall,deferUnavailableCalls,releaseDeferredCalls} from '../dist/game/call-scheduler.js';
 import {createFishCase,fishAction} from '../dist/game/fish-case.js';
 for(let seed=0;seed<500;seed++){
   const s=createState();s.run=createRun({seed:'PARALLEL-'+seed});s.started=true;s.mode='walk';
@@ -47,4 +48,21 @@ const reset=createStudioConcurrent('NEW');assert.deepEqual(dispatchState(reset).
 // Completing all outstanding work leaves the clock in place and exposes an idle context.
 reset.mode='walk';reset.clock=1152;reset.completed=[...reset.run.ids];const i=idlePhase(reset);assert.equal(reset.run.phases[i].kind,'wait');assert.equal(reset.clock,1152);
 const timerState=createStudioConcurrent('TIMER');timerState.mode='walk';let recalled=0;const timers=[{state:timerState,remaining:2.5,fn:()=>recalled++}];assert.deepEqual(tickCallTimers(timers,timerState,1),[]);timerState.mode='pause';assert.deepEqual(tickCallTimers(timers,timerState,60),[]);assert.equal(timers[0].remaining,1.5);timerState.mode='walk';selectWork(timerState,1);for(const fn of tickCallTimers(timers,timerState,1.5))fn();assert.equal(recalled,1,'Delayed recall survives task switching but waits through pause');assert.equal(timers.length,0);timers.push({state:timerState,remaining:1,fn:()=>recalled++});assert.deepEqual(tickCallTimers(timers,createStudioConcurrent('RESET'),10),[]);assert.equal(timers.length,0);assert.equal(recalled,1,'Old callbacks cannot leak into a new run');
-console.log('Call scheduler passed: 500 full-day dispatches with unfinished work, multiple accepted tasks, generic/procedure context restore, independent modal and rest clocks, pause/end guards, no duplicate arrivals, no completion-driven clock jump, clean new runs and isolated studio events.');
+const consults=['fish','blueberry','nose','tonsil','cockroach','airway','sudden','vertigo','ng','otalgia','hoarse','trachcare','nasaltrauma','infantfish','lego','bead','cotton','missinginfo'];
+for(const location of ['f7','g2','f1','g7','f5'])for(const orRoom of [null,13,16])for(const caseId of Object.keys(EVENTS)){
+ const state={location,orRoom};assert.equal(callAllowed(state,{caseId}),location!=='f5'||!consults.includes(caseId),location+' / '+caseId);
+}
+for(const orRoom of [null,13,16]){
+ const t=createStudioORCalls('OR-PHONES');t.mode='walk';t.orRoom=orRoom;
+ const first=releaseDueCalls(t);assert.deepEqual(first.map(p=>p.case),['wardOrder','wardExtend','newPatient','orSenior']);assert.equal(first.length,dispatchState(t).released.length);assert.deepEqual(releaseDueCalls(t),[]);
+ t.clock+=50;assert.deepEqual(releaseDueCalls(t),[]);t.location='g2';t.orRoom=null;assert.deepEqual(releaseDueCalls(t).map(p=>p.case),['fish','ng','sudden','missinginfo']);assert.deepEqual(releaseDueCalls(t),[]);
+}
+const held=createStudioORCalls('HOLD');held.mode='walk';
+const old={id:'fish',caseId:'fish',receivedAt:800},small={id:'wardOrder-2',caseId:'wardOrder'};
+assert.deepEqual(deferUnavailableCalls(held,[old,small]),[small]);deferCall(held,{...old});deferCall(held,{id:'sudden-audiology',caseId:'sudden',audiology:true});deferCall(held,{id:'ng',caseId:'ng'});deferCall(held,{id:'ng',caseId:'ng'});
+assert.equal(dispatchState(held).held.length,3);assert.deepEqual(releaseDeferredCalls(held),[]);
+held.location='f7';held.mode='pause';assert.deepEqual(releaseDeferredCalls(held),[]);held.mode='walk';
+const resumed=releaseDeferredCalls(held);assert.equal(resumed.length,3);assert.equal(resumed[0].arrived,true);assert.equal(resumed[0].call.receivedAt,800);assert.equal(resumed[1].arrived,false);assert(resumed[1].call.audiology);assert.deepEqual(releaseDeferredCalls(held),[]);
+deferCall(held,{id:'fish',caseId:'fish'});held.completed.push('fish');assert.deepEqual(releaseDeferredCalls(held),[]);assert.equal(dispatchState(held).held.length,0);assert.equal(dispatchState(createStudioORCalls('FRESH')).held,undefined);
+assert(EVENTS.newPatient.phoneOnly);assert(EVENTS.newPatient.call.includes('7F11B'));assert(EVENTS.newPatient.call.includes('林予澄'));assert.equal(EVENTS.newPatient.callType,'new-patient');
+console.log('Call scheduler passed: 500 full-day dispatches; OR consult suppression in rooms/corridor with short calls, new-patient and OR calls preserved, deferred recall/audiology, unchanged arrival charges, pause/resume, duplicate guards, all-location routing and isolated previews.');

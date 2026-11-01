@@ -1,10 +1,18 @@
 import {dayClockRate,spendShiftTime} from './day-pacing.js';
 import {openingClockRate} from './morning-opening.js';
+import {EVENTS} from './event-pool.js';
 // Phone arrivals follow the shift clock; selected work is a separate, resumable context.
 const WORK_FIELDS=['accepted','activeDest','caseStep','caseMode','awaitingDesk','clinicCallDeferred','activeORProcedure'];
 const defaults={accepted:false,activeDest:null,caseStep:0,caseMode:'patient',awaitingDesk:false,clinicCallDeferred:false,activeORProcedure:null};
 export const parallelCalls=s=>!!s.run&&!s.explore&&(!s.run.studio||!!s.run.concurrentPreview);
 export function dispatchState(s){return s.dispatch??={released:[],work:{},handled:[]};}
+export const callAllowed=(s,call)=>s.location!=='f5'||EVENTS[call.caseId??call.case]?.callType!=='consult';
+export function deferCall(s,call,{arrived=false}={}){const held=dispatchState(s).held??=[];if(!held.some(item=>item.call.id===call.id))held.push({call,arrived});}
+export function deferUnavailableCalls(s,calls){return calls.filter(call=>{if(callAllowed(s,call))return true;deferCall(s,call,{arrived:true});return false;});}
+export function releaseDeferredCalls(s){
+  if(!callTimeRunning(s))return[];
+  const d=dispatchState(s),ready=[];d.held=(d.held||[]).filter(item=>{if(s.completed.includes(item.call.id))return false;if(!callAllowed(s,item.call))return true;ready.push(item);return false;});return ready;
+}
 export function saveWork(s){
   const p=s.run?.phases[s.phase],id=p?.id;if(!p?.case)return;
   dispatchState(s).work[id]=Object.fromEntries(WORK_FIELDS.map(key=>[key,s[key]]));
@@ -25,7 +33,7 @@ export function tickCallTimers(timers,s,dt){
 export function releaseDueCalls(s){
   if(!parallelCalls(s)||!callTimeRunning(s))return[];
   const d=dispatchState(s),due=[];
-  s.run.phases.forEach((p,index)=>{if(p.kind!=='case'||p.clock>s.clock||d.released.includes(p.id)||p.afterCase&&!s.completed.includes(p.afterCase))return;d.released.push(p.id);if(!s.completed.includes(p.id))due.push({...p,index});});
+  s.run.phases.forEach((p,index)=>{if(p.kind!=='case'||p.clock>s.clock||d.released.includes(p.id)||p.afterCase&&!s.completed.includes(p.afterCase)||!callAllowed(s,p))return;d.released.push(p.id);if(!s.completed.includes(p.id))due.push({...p,index});});
   return due;
 }
 export function tickShiftClock(s,dt){

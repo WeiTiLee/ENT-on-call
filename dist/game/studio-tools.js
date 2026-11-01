@@ -10,7 +10,7 @@ export const studioEnabled=params=>params.get('studio')==='1';
 export const STUDIO_GROUPS=[
   {title:'白天事件',ids:['rounds','nasal-cleaning','outpatientPaperwork','outpatientNG','outpatientTrach','ng','sudden','booking','contact',...LOCAL_OR_IDS,'orSenior']},
   {title:'值班事件',ids:['fish','nose','tonsil','airway','blueberry','cockroach','lego','infantfish','bead','cotton','vertigo','otalgia','hoarse','trachcare','nasaltrauma',...NIGHT_WARD_IDS]},
-  {title:'科內日常',ids:['lunchOrder','drink','takoyaki','popcorn','missinginfo']}
+  {title:'科內日常',ids:['lunchOrder','drink','takoyaki','popcorn','newPatient','missinginfo']}
 ];
 export const STUDIO_SCENES=[
   {id:'ward',label:'7F 病房',location:'f7'},
@@ -69,6 +69,12 @@ export function createStudioConcurrent(seed,profile={}){
   s.run.testId=null;s.run.concurrentPreview=true;s.run.ids=['fish','wardOrder','wardExtend'];s.run.total=3;s.run.maxScore=30;
   s.run.phases=s.run.ids.map((id,i)=>({...createStudioEvent(id,seed,profile).run.phases[0],clock:1140+i*6}));
   s.run.phases.push({...PHASES.find(p=>p.id==='finish')});return s;
+}
+export function createStudioORCalls(seed,profile={}){
+  const s=createStudioEvent('orassist',seed,profile);s.orRoom=13;s.clock=930;
+  const ids=['wardOrder','wardExtend','newPatient','orSenior','fish','ng','sudden','missinginfo'];
+  s.run.testId=null;s.run.concurrentPreview=true;s.run.ids=ids;s.run.total=ids.length;s.run.maxScore=ids.length*10;
+  s.run.phases=ids.map(id=>({...createStudioEvent(id,seed,profile).run.phases[0],clock:930}));s.run.phases.push({...PHASES.find(p=>p.id==='finish')});return s;
 }
 
 export function createStudioShift(section,seed,profile={}){

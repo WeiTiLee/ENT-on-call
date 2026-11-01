@@ -6,9 +6,9 @@ import {PARTY_QUOTA,partyDecks,createRun,orderedChoices,eventPoints,resultScore}
 import {LOCATIONS,nextHop} from '../dist/game/ent-data.js';
 import {readFile} from 'node:fs/promises';
 const graph=JSON.parse(await readFile(new URL('../dist/game/navigation.json',import.meta.url),'utf8'));
-const ids=Object.keys(EVENTS),categorySizes={urgent:4,routine:20,odd:5,daily:5};
+const ids=Object.keys(EVENTS),categorySizes={urgent:4,routine:20,odd:5,daily:6};
 const spots={f7:['patient','food','nurse','computer'],f5:['operation'],g2:['patient','patient2','desk','clinic-phone','printer','tissue'],f1:['patient']};
-assert.equal(ids.length,34);
+assert.equal(ids.length,35);
 for(const [category,size] of Object.entries(categorySizes))assert.equal(ids.filter(id=>EVENTS[id].category===category).length,size);
 for(const [id,c] of Object.entries(EVENTS)){
   assert(CATEGORIES[c.category]&&LOCATIONS[c.dest]&&c.brief&&c.call&&c.title,id);
@@ -27,9 +27,9 @@ for(let seed=0;seed<500;seed++){
   const r=createRun({seed:code});assert(OUTPATIENT_IDS.includes(r.ids[2]));assert.equal(r.ids.filter(id=>LOCAL_OR_IDS.includes(id)).length,r.orPlan.kind==='three-local'?3:2);assert(r.phases.find(p=>LOCAL_OR_IDS.includes(p.id)).clock===810);assert.equal(r.total,27);assert.equal(r.maxScore,270);for(const id of FIXED_ORDER_IDS)assert(r.ids.includes(id));assert.equal(r.phases.find(p=>p.id==='lunchOrder').clock,990);assert.equal(r.phases.find(p=>p.id==='dinner').clock,1080);assert(!r.phases.some(p=>p.case==='drink'));for(let i=1;i<r.phases.length;i++)assert(r.phases[i].clock>=r.phases[i-1].clock);assert.equal(r.total,new Set(r.ids).size);counts.add(r.total);r.ids.forEach(id=>seen.add(nightCaseId(id)));
   const options=[{good:true},{good:false},{good:false}];const shuffled=orderedChoices(options,code);assert.deepEqual(shuffled,orderedChoices(options,code));firstPositions.add(shuffled.findIndex(o=>o.good));
 }
-assert.equal(counts.size,1);assert.equal(seen.size,36);assert.equal(firstPositions.size,3);
+assert.equal(counts.size,1);assert.equal(seen.size,37);assert.equal(firstPositions.size,3);
 assert.equal(eventPoints('fish',{fish:2}),6);assert.equal(eventPoints('fish',{fish:20}),0);assert.equal(resultScore(['fish','fish','nose'],{fish:1}),18);
-console.log('Events passed: 36 events; 500 seeded three-team draws have 2 shared ward tasks plus 10 calls, 12 unique events and equal categories per team; personal runs have 27 tasks with guaranteed bento/drink orders, shuffled answers, score caps. Max pair overlap: '+maxShared+'/12.');
+console.log('Events passed: 37 events; 500 seeded three-team draws have 2 shared ward tasks plus 10 calls, 12 unique events and equal categories per team; personal runs have 27 tasks with guaranteed bento/drink orders, shuffled answers, score caps. Max pair overlap: '+maxShared+'/12.');
 
 
 assert(EVENTS.ng.requiresDesk);assert(EVENTS.ng.source.includes('病房'));assert(!EVENTS.ng.source.includes('小禾'));
