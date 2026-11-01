@@ -3,15 +3,15 @@ import {createMorningOpening,monthlyConferences,conferencePreviewDate,calendarTo
 import {calendarHTML,paperSlideHTML} from '../dist/game/morning-opening-ui.js';
 import {WARD_PLAN,wardRect} from '../dist/game/ward-plan.js';
 import {perimeterApproaches,spotDistance,sortedApproaches} from '../dist/game/interaction-points.js';
-const today='2026-10-30',variants=new Set(),types=new Set(),papers=new Set();
+const today='2026-10-30',variants=new Set(),types=new Set(),papers=new Set(),reported=new Set();
 for(let i=0;i<180;i++){
  const seed='CALENDAR-'+i,o=createMorningOpening(seed,{today});variants.add(o.conference);types.add(o.type);papers.add(o.paperId);assert.deepEqual(o,createMorningOpening(seed,{today}));assert.equal(openingTarget(o).spot,'computer');assert(!o.checked);assert(!beginConference(o,450));assert(!answerConference(o,0));
  assert(checkMorningCalendar(o));assert(!checkMorningCalendar(o));assert.equal(calendarEntry(o,today)?.id,o.conference?o.type:undefined);
  if(o.conference){assert.equal(openingTarget(o).spot,'conference');assert(!beginConference(o,449));assert.deepEqual(tickConference(o,449,{present:true}),[]);assert.deepEqual(tickConference(o,450,{present:true}),[]);assert.equal(o.attendance,'on-time');assert(beginConference(o,450));assert(!beginConference(o,450));
-  const paper=conferencePaper(o);assert.equal(paper.slides.length,3);for(let j=0;j<3;j++){assert.equal(o.slide,j);assert(paperSlideHTML(o).includes('科內虛構'));assert(nextConferenceSlide(o));}assert.equal(o.stage,'questions');assert(!nextConferenceSlide(o));assert(!answerConference(o,1));assert.equal(o.question,0);assert.equal(o.mistakes,1);assert(answerConference(o,0));o.focused=false;assert.equal(openingTarget(o),null);o.focused=true;assert.equal(o.question,1);assert(answerConference(o,0));assert.equal(o.stage,'done');assert(!o.focused);assert(!answerConference(o,0));assert.deepEqual(tickConference(o,500),[]);
+  const paper=conferencePaper(o);reported.add(paper.id);assert.equal(paper.slides.length,3);for(let j=0;j<3;j++){assert.equal(o.slide,j);assert(paperSlideHTML(o).includes('科內虛構'));assert(nextConferenceSlide(o));}assert.equal(o.stage,'questions');assert(!nextConferenceSlide(o));assert(!answerConference(o,1));assert.equal(o.question,0);assert.equal(o.mistakes,1);assert(answerConference(o,0));o.focused=false;assert.equal(openingTarget(o),null);o.focused=true;assert.equal(o.question,1);assert(answerConference(o,0));assert.equal(o.stage,'done');assert(!o.focused);assert(!answerConference(o,0));assert.deepEqual(tickConference(o,500),[]);
  }else{assert.equal(o.stage,'done');assert(!beginConference(o,450));assert.deepEqual(tickConference(o,500),[]);}assert.equal(openingTarget(o),null);
 }
-assert.equal(variants.size,2);assert.equal(types.size,4);assert.equal(papers.size,3);assert.equal(CONFERENCE_TYPES.length,4);assert.equal(CONFERENCE_PAPERS.length,3);
+assert.equal(variants.size,2);assert.equal(types.size,4);assert.equal(papers.size,5);assert.equal(reported.size,5);assert.equal(CONFERENCE_TYPES.length,4);assert.equal(CONFERENCE_PAPERS.length,5);
 for(const iso of ['2026-02-15','2024-02-29','2026-12-31','2027-01-01']){const [year,month]=iso.split('-').map(Number),cells=calendarCells(year,month-1);assert.equal(cells.length,42);assert.equal(new Set(cells.map(d=>d.date)).size,42);assert(cells.some(d=>d.date===iso));assert.equal(new Date(cells[0].date+'T12:00:00Z').getUTCDay(),0);}
 assert.equal(calendarToday(new Date('2026-10-30T16:30:00Z')),'2026-10-31');
 const counts=new Set(),novemberPlans=new Set();

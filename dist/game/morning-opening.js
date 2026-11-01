@@ -22,7 +22,21 @@ export const CONFERENCE_PAPERS=[
   {tag:'討論',title:'建議設立候鳥返鄉專區。',text:'研究限制：負責記錄筆位置的那支筆也不見了。後續計畫於聯通層公告「病房撿到初診間的筆，請記得送回」，並觀察歸巢率。'}
  ],questions:[
   {question:'主治：「筆到底怎麼上樓的？」',options:[{text:'跟著工作流程和口袋移動；先看紀錄，別急著指控誰。',correct:true},{text:'筆自己通過電梯門，還有刷員工證。'}],explanation:'先確認移動紀錄；這是虛構的追蹤研究，笑點在於借完忘記送回。'},
-  {question:'主治：「你在 7F 撿到這支，接下來？」',options:[{text:'確認是初診間的筆，順路送回去。',correct:true},{text:'撕掉標籤，宣布它已完成院內轉調。'}],explanation:'把筆送回原本的地方，讓下一位同事找得到。'}]}
+  {question:'主治：「你在 7F 撿到這支，接下來？」',options:[{text:'確認是初診間的筆，順路送回去。',correct:true},{text:'撕掉標籤，宣布它已完成院內轉調。'}],explanation:'把筆送回原本的地方，讓下一位同事找得到。'}]},
+ {id:'sleep',title:'眼睛一閉，分機就響：住院醫師與床墊的神祕感應',subtitle:'從頭碰到枕頭，到「喂，ENT嗎」的時間分析',slides:[
+  {tag:'研究問題',title:'枕頭是不是接了院內分機？',text:'研究起點定義為後腦勺接觸枕頭。主要終點為第一次被叫「ENT醫師」，次要終點為棉被有沒有成功拉到肩膀。',bars:[['站著等 call',12],['坐到床邊',46],['終於躺平',96]]},
+  {tag:'方法與結果',title:'唯一睡滿三分鐘的，是對照組的空床。',text:'躺平組最常回報「我才剛躺下」；尚未躺平組則表示「我根本還沒躺」。一位受試者成功拉好棉被，但電話在他決定要不要翻身時響了。'},
+  {tag:'討論',title:'本研究無法雙盲，因為沒有人閉得了眼。',text:'研究助理原本負責記錄入睡時間，後來被叫去補 order。建議後續研究比較不同枕頭；但採購前，公務課先問：這個到底算寢具，還是通訊設備？'}
+ ],questions:[
+  {question:'主治：「所以把值班室的床拆掉，call就會變少？」',options:[{text:'不能這樣推論，還要看工作量；有空檔還是需要休息。',correct:true},{text:'對，並把枕頭列為高風險通訊設備。'}],explanation:'這是虛構的科內笑點，剛躺下接到電話不代表床墊造成來電。'},
+  {question:'主治：「那你今晚打算睡哪裡？」',options:[{text:'回自己的值班室，趁空檔休息，也留意電話。',correct:true},{text:'躺初診間的治療床，讓分機以為我還在看病人。'}],explanation:'回自己的值班室休息，別搶病人的治療床或診療椅。'}]},
+ {id:'order',title:'只要一分鐘：補個 order 的時間膨脹效應',subtitle:'從「幫我補一下」到真正按下送出的歷程',slides:[
+  {tag:'研究問題',title:'「一下」的單位，是分鐘還是一個班？',text:'納入所有以「很快啦」開頭的請託。計時從接到電話開始，包含找電腦、登入、被迫改密碼，以及忘記剛剛到底要補哪一張。'},
+  {tag:'方法與結果',title:'Order只有一張，密碼已經換了三組。',text:'第一組密碼與前三次相同，第二組只差一個字也不行。第三組終於通過，系統請你重新登入。受試者的表情先完成了統計顯著，order還沒有。',bars:[['接電話時的脾氣',18],['密碼被退回',62],['登入後又接一通',93]]},
+  {tag:'討論',title:'一分鐘，是對方說出口花的時間。',text:'研究限制：觀察員剛問「怎麼還沒好」，就被分配去修卡紙的印表機。建議後續研究將「順便」列為獨立變項；目前沒有人願意加入順便組。'}
+ ],questions:[
+  {question:'主治：「只做一分鐘的，為什麼沒有納入分析？」',options:[{text:'也要納入，不能只挑卡最久的；這篇是搞笑報告。',correct:true},{text:'因為做太快，研究者還沒打開碼表。'}],explanation:'不能只選符合笑點的紀錄來下結論；本報告與圖表都是科內虛構內容。'},
+  {question:'主治：「所以這張order，你補好了沒？」',options:[{text:'先核對病人與內容，確認送出；做完再說好了。',correct:true},{text:'我已經把「收到」講得很有完成的感覺。'}],explanation:'接到請託後還是要核對並完成，不能把「收到」當成已經送出。'}]}
 ];
 function hash(value){let h=0;for(const c of String(value))h=(h*33+c.charCodeAt(0))>>>0;return h;}
 function scheduleHash(value){let h=hash(value);h=Math.imul(h^h>>>16,0x7feb352d);h=Math.imul(h^h>>>15,0x846ca68b);return(h^h>>>16)>>>0;}
@@ -48,7 +62,7 @@ export function monthlyConferences(seed,month,{today,conference}={}){
  const offset=scheduleHash(key+'|type')%CONFERENCE_TYPES.length;
  return selected.sort().map((date,i)=>({date,type:CONFERENCE_TYPES[(offset+i)%CONFERENCE_TYPES.length].id}));
 }
-export function createMorningOpening(seed,{conference,paperId,today=calendarToday()}={}){const h=hash(seed),entry=monthlyConferences(seed,today.slice(0,7),{today,conference}).find(e=>e.date===today);return{seed:String(seed),today,conferenceOverride:conference,conference:!!entry,type:entry?.type??CONFERENCE_TYPES[Math.floor(h/3)%4].id,paperId:CONFERENCE_PAPERS.some(p=>p.id===paperId)?paperId:CONFERENCE_PAPERS[Math.floor(h/13)%3].id,attending:['蔡','徐','葉','黃','羅','王','呂','張'][h%8],checked:false,stage:'calendar',slide:0,question:0,focused:true,mistakes:0,attendance:'pending',presentSince:null,wasPresent:false,arrivedAt:null,lateQueued:false,missedQueued:false,acknowledged:[]};}
+export function createMorningOpening(seed,{conference,paperId,today=calendarToday()}={}){const h=hash(seed),entry=monthlyConferences(seed,today.slice(0,7),{today,conference}).find(e=>e.date===today);return{seed:String(seed),today,conferenceOverride:conference,conference:!!entry,type:entry?.type??CONFERENCE_TYPES[Math.floor(h/3)%4].id,paperId:CONFERENCE_PAPERS.some(p=>p.id===paperId)?paperId:CONFERENCE_PAPERS[Math.floor(h/13)%CONFERENCE_PAPERS.length].id,attending:['蔡','徐','葉','黃','羅','王','呂','張'][h%8],checked:false,stage:'calendar',slide:0,question:0,focused:true,mistakes:0,attendance:'pending',presentSince:null,wasPresent:false,arrivedAt:null,lateQueued:false,missedQueued:false,acknowledged:[]};}
 export const conferenceType=o=>CONFERENCE_TYPES.find(t=>t.id===o.type);
 export const conferencePaper=o=>CONFERENCE_PAPERS.find(p=>p.id===o.paperId);
 export function calendarEntry(o,date){const entry=monthlyConferences(o.seed,date.slice(0,7),{today:o.today,conference:o.conferenceOverride}).find(e=>e.date===date);return entry?CONFERENCE_TYPES.find(t=>t.id===entry.type):null;}
