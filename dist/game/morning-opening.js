@@ -25,11 +25,33 @@ export const CONFERENCE_PAPERS=[
   {question:'主治：「你在 7F 撿到這支，接下來？」',options:[{text:'確認是初診間的筆，順路送回去。',correct:true},{text:'撕掉標籤，宣布它已完成院內轉調。'}],explanation:'把筆送回原本的地方，讓下一位同事找得到。'}]}
 ];
 function hash(value){let h=0;for(const c of String(value))h=(h*33+c.charCodeAt(0))>>>0;return h;}
+function scheduleHash(value){let h=hash(value);h=Math.imul(h^h>>>16,0x7feb352d);h=Math.imul(h^h>>>15,0x846ca68b);return(h^h>>>16)>>>0;}
 export function calendarToday(now=new Date()){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);}
-export function createMorningOpening(seed,{conference,paperId,today=calendarToday()}={}){const h=hash(seed);return{seed:String(seed),today,conference:conference??h%3!==0,type:CONFERENCE_TYPES[Math.floor(h/3)%4].id,paperId:CONFERENCE_PAPERS.some(p=>p.id===paperId)?paperId:CONFERENCE_PAPERS[Math.floor(h/13)%3].id,attending:['蔡','徐','葉','黃','羅','王','呂','張'][h%8],checked:false,stage:'calendar',slide:0,question:0,focused:true,mistakes:0,attendance:'pending',presentSince:null,wasPresent:false,arrivedAt:null,lateQueued:false,missedQueued:false,acknowledged:[]};}
+export function conferencePreviewDate(today=calendarToday()){const date=new Date(today+'T12:00:00Z'),weekday=date.getUTCDay();if(weekday===0||weekday===6)date.setUTCDate(date.getUTCDate()+(weekday===6?2:1));return date.toISOString().slice(0,10);}
+export function monthlyConferences(seed,month,{today,conference}={}){
+ const key=String(seed)+'|'+month,[year,m]=month.split('-').map(Number),days=new Date(Date.UTC(year,m,0)).getUTCDate(),weeks=new Map(),selected=[];
+ const forced=typeof conference==='boolean'&&today?.startsWith(month+'-')&&[1,2,3,4,5].includes(new Date(today+'T12:00:00Z').getUTCDay());
+ for(let day=1;day<=days;day++){
+  const date=month+'-'+String(day).padStart(2,'0'),weekday=new Date(date+'T12:00:00Z').getUTCDay();
+  if(weekday===0||weekday===6||(forced&&!conference&&date===today))continue;
+  const week=Math.floor((day-1+new Date(Date.UTC(year,m-1,1)).getUTCDay())/7);
+  if(!weeks.has(week))weeks.set(week,{id:week,dates:[],selected:0});weeks.get(week).dates.push(date);
+ }
+ const take=(week,date)=>{selected.push(date);week.selected++;week.dates.splice(week.dates.indexOf(date),1);};
+ if(forced&&conference){const week=[...weeks.values()].find(w=>w.dates.includes(today));take(week,today);}
+ // Fill the least occupied weeks first so meetings stay spread across the month.
+ const count=6+scheduleHash(key+'|count')%3;
+ while(selected.length<count){
+  const week=[...weeks.values()].filter(w=>w.dates.length).sort((a,b)=>a.selected-b.selected||scheduleHash(key+'|week|'+a.id)-scheduleHash(key+'|week|'+b.id))[0];
+  const date=week.dates.slice().sort((a,b)=>scheduleHash(key+'|'+a)-scheduleHash(key+'|'+b))[0];take(week,date);
+ }
+ const offset=scheduleHash(key+'|type')%CONFERENCE_TYPES.length;
+ return selected.sort().map((date,i)=>({date,type:CONFERENCE_TYPES[(offset+i)%CONFERENCE_TYPES.length].id}));
+}
+export function createMorningOpening(seed,{conference,paperId,today=calendarToday()}={}){const h=hash(seed),entry=monthlyConferences(seed,today.slice(0,7),{today,conference}).find(e=>e.date===today);return{seed:String(seed),today,conferenceOverride:conference,conference:!!entry,type:entry?.type??CONFERENCE_TYPES[Math.floor(h/3)%4].id,paperId:CONFERENCE_PAPERS.some(p=>p.id===paperId)?paperId:CONFERENCE_PAPERS[Math.floor(h/13)%3].id,attending:['蔡','徐','葉','黃','羅','王','呂','張'][h%8],checked:false,stage:'calendar',slide:0,question:0,focused:true,mistakes:0,attendance:'pending',presentSince:null,wasPresent:false,arrivedAt:null,lateQueued:false,missedQueued:false,acknowledged:[]};}
 export const conferenceType=o=>CONFERENCE_TYPES.find(t=>t.id===o.type);
 export const conferencePaper=o=>CONFERENCE_PAPERS.find(p=>p.id===o.paperId);
-export function calendarEntry(o,date){if(date===o.today)return o.conference?conferenceType(o):null;const weekday=new Date(date+'T12:00:00Z').getUTCDay();return weekday===0?null:CONFERENCE_TYPES[hash(date)%4];}
+export function calendarEntry(o,date){const entry=monthlyConferences(o.seed,date.slice(0,7),{today:o.today,conference:o.conferenceOverride}).find(e=>e.date===date);return entry?CONFERENCE_TYPES.find(t=>t.id===entry.type):null;}
 export function calendarCells(year,month){const first=new Date(Date.UTC(year,month,1)),start=first.getTime()-first.getUTCDay()*86400000;return Array.from({length:42},(_,i)=>{const d=new Date(start+i*86400000);return{date:d.toISOString().slice(0,10),day:d.getUTCDate(),inMonth:d.getUTCMonth()===month};});}
 export function checkMorningCalendar(o){if(!o||o.checked)return false;o.checked=true;if(o.stage!=='missed')o.stage=o.conference?'waiting':'done';o.focused=o.conference&&o.stage!=='missed';return true;}
 export function openingTarget(o){return o?.focused&&!['done','missed'].includes(o.stage)?{dest:'f7',spot:o.checked?'conference':'computer'}:null;}

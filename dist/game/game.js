@@ -1,5 +1,5 @@
 import {spendShiftTime,dayPacingHint} from './day-pacing.js';
-import {MORNING_START,CONFERENCE_START,CONFERENCE_END,createMorningOpening,checkMorningCalendar,openingTarget,conferenceType,conferencePaper,conferenceQuestions,beginConference,nextConferenceSlide,answerConference,inDiscussionRoom,tickConference,conferenceCall} from './morning-opening.js';
+import {MORNING_START,CONFERENCE_START,CONFERENCE_END,createMorningOpening,conferencePreviewDate,checkMorningCalendar,openingTarget,conferenceType,conferencePaper,conferenceQuestions,beginConference,nextConferenceSlide,answerConference,inDiscussionRoom,tickConference,conferenceCall} from './morning-opening.js';
 import {calendarHTML,paperHeading,paperSlideHTML} from './morning-opening-ui.js';
 import {hudVitals} from './hud-state.js';
 import {parallelCalls,dispatchState,saveWork,selectWork,pendingWork,releaseDueCalls,tickShiftClock,idlePhase,callTimeRunning,tickCallTimers} from './call-scheduler.js';
@@ -120,7 +120,7 @@ function showConference(){
 }
 function seatAtNursingStation(){world.teleportToSpot('rest-chair');beginWorldRest(world.spots.find(s=>s.id==='rest-chair'));}
 function launchOpeningPreview({conference=true,paperId,clock=MORNING_START,atConference=false}={}){
-  studioUseState(createStudioEvent('rounds',studioSeed,studioProfile()));S.clock=clock;S.run.concurrentPreview=true;S.morning.escort='waiting';S.opening=createMorningOpening(studioSeed,{conference,paperId});
+  studioUseState(createStudioEvent('rounds',studioSeed,studioProfile()));S.clock=clock;S.run.concurrentPreview=true;S.morning.escort='waiting';S.opening=createMorningOpening(studioSeed,{conference,paperId,today:conference?conferencePreviewDate():undefined});
   if(atConference){checkMorningCalendar(S.opening);S.opening.wasPresent=true;S.opening.presentSince=449;world.teleportToSpot('conference');conferenceClock();showConference();}else{seatAtNursingStation();toast('07:20，先確認今日有無晨會。點行事曆，再點今天查看。');}
 }
 
