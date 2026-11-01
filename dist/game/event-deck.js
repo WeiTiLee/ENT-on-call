@@ -1,6 +1,6 @@
 import {NIGHT_WARD_IDS,NIGHT_REPEAT_IDS,WARD_ORDER_REQUESTS,nightCaseId} from './night-ward-calls.js';
 import {EVENTS,EVENT_VERSION,CATEGORIES,OUTPATIENT_IDS,LOCAL_OR_IDS,OR_WORK_IDS,FIXED_ORDER_IDS} from './event-pool.js';
-import {MORNING_IDS,MORNING_CASES} from './morning-events.js';
+import {MORNING_IDS,MORNING_CASES,morningEventIds} from './morning-events.js';
 import {PHASES,LOCATIONS} from './ent-data.js';
 import {operatingLabel} from './operating-plan.js';
 
@@ -29,7 +29,7 @@ export function partyDecks(seed){
       hands[team].push(chosen);usage.set(chosen,(usage.get(chosen)||0)+1);
     }
   }
-  return Object.fromEntries(TEAMS.map((team,i)=>[team,[...MORNING_IDS,hands[i][0],LOCAL_OR_IDS[(hash(normalizeSeed(seed)+'|or')+i)%3],...FIXED_ORDER_IDS,...shuffle(hands[i].slice(1),seededRandom(normalizeSeed(seed)+'|order|'+team))]]));
+  return Object.fromEntries(TEAMS.map((team,i)=>[team,[...morningEventIds(normalizeSeed(seed)),hands[i][0],LOCAL_OR_IDS[(hash(normalizeSeed(seed)+'|or')+i)%3],...FIXED_ORDER_IDS,...shuffle(hands[i].slice(1),seededRandom(normalizeSeed(seed)+'|order|'+team))]]));
 }
 // Outpatient work opens the day; the senior's OR call belongs to the afternoon.
 export function buildTimeline(ids,seed='NIGHT'){
@@ -63,7 +63,7 @@ export function createRun({mode='random',seed,team='A'}={}){
   let orPlan=null;
   if(mode==='party')ids=partyDecks(seed)[team];
   else{const rng=seededRandom(seed),quota={urgent:3,routine:2,odd:3,daily:1};
-    const first=OUTPATIENT_IDS[Math.floor(rng()*3)],local=shuffle(LOCAL_OR_IDS,rng);orPlan={kind:rng()<.5?'three-local':'local-and-16',ids:[]};orPlan.ids=orPlan.kind==='three-local'?local:[...local.slice(0,2),'orSenior'];ids=[...MORNING_IDS,first,...orPlan.ids,...FIXED_ORDER_IDS,...shuffle(Object.entries(quota).flatMap(([category,size])=>shuffle(pool(category).filter(id=>id!==first),rng).slice(0,size)),rng),...NIGHT_WARD_IDS,...NIGHT_REPEAT_IDS];}
+    const first=OUTPATIENT_IDS[Math.floor(rng()*3)],local=shuffle(LOCAL_OR_IDS,rng);orPlan={kind:rng()<.5?'three-local':'local-and-16',ids:[]};orPlan.ids=orPlan.kind==='three-local'?local:[...local.slice(0,2),'orSenior'];ids=[...morningEventIds(seed),first,...orPlan.ids,...FIXED_ORDER_IDS,...shuffle(Object.entries(quota).flatMap(([category,size])=>shuffle(pool(category).filter(id=>id!==first),rng).slice(0,size)),rng),...NIGHT_WARD_IDS,...NIGHT_REPEAT_IDS];}
   return{mode,seed,orPlan,team:mode==='party'?team:'',ids,phases:buildTimeline(ids,seed),total:ids.length,maxScore:ids.length*10,fingerprint:hash(EVENT_VERSION+'|'+seed+'|'+team+'|'+ids.join(',')).toString(16).toUpperCase().padStart(8,'0'),categories:Object.fromEntries(Object.keys(CATEGORIES).map(c=>[c,ids.filter(id=>(EVENTS[nightCaseId(id)]||MORNING_CASES[id]).category===c).length]))};
 }
 export function eventPoints(id,errors={}){return Math.max(0,10-2*(errors[id]||0));}

@@ -1,3 +1,4 @@
+import {morningEventIds} from '../dist/game/morning-events.js';
 import assert from 'node:assert/strict';
 import {createNPX,npxAction,npxSpot,npxTarget,requestNPXSupport,joinNPXSenior,NPX_STAGES,NPX_PATIENTS} from '../dist/game/npx-biopsy.js';
 import {EVENTS,LOCAL_OR_IDS} from '../dist/game/event-pool.js';
@@ -37,7 +38,7 @@ assert.deepEqual(npxTarget(t,13),{dest:'f5',spot:'or-exit'});assert.deepEqual(np
 assert.equal(joinNPXSenior(t,13),false);assert.equal(t.stage,'scope');assert(joinNPXSenior(t,16));assert.equal(joinNPXSenior(t,16),false);assert.deepEqual(npxTarget(t,16),{dest:'f5',spot:'or-exit'});
 assert(npxAction(t,'support').supported);assert.equal(t.stage,'instrument');assert.equal(npxAction(t,'support').ok,false,'Support must not skip the scrub handoff');npxAction(t,'instrument','cup');npxAction(t,'support');npxAction(t,'support');assert.equal(t.stage,'label');assert.equal(t.mistakes,0);assert.equal(t.assisted.length,3);assert.equal(npxAction(t,'handoff').ok,false,'Support still needs a correct label and physical handoff');
 assert.equal(EVENTS.orassist.orRoom,13);assert(EVENTS.orassist.call.includes('NPX biopsy'));assert(EVENTS.orassist.source.includes('流動'));
-for(let seed=0;seed<30;seed++){const run=createRun({seed:'NPX-RUN-'+seed});assert.equal(run.ids.filter(id=>LOCAL_OR_IDS.includes(id)).length,run.orPlan.kind==='three-local'?3:2);assert(run.total===27);assert.equal(run.phases.find(p=>LOCAL_OR_IDS.includes(p.case)).clock,810);}
+for(let seed=0;seed<30;seed++){const run=createRun({seed:'NPX-RUN-'+seed});assert.equal(run.ids.filter(id=>LOCAL_OR_IDS.includes(id)).length,run.orPlan.kind==='three-local'?3:2);assert.equal(run.total,25+morningEventIds(run.seed).length);assert.equal(run.phases.find(p=>LOCAL_OR_IDS.includes(p.case)).clock,810);}
 for(const stage of NPX_STAGES.slice(0,-1)){const task=createNPX('art');task.stage=stage;const html=npxHTML(task,{near:true});assert(html.includes('id="modalTitle"'));assert(!html.includes('undefined'));}
 for(const art of [npxDrape(t),npxEndoscope(t),npxSpecimen(t)])assert(art.includes('<svg')&&art.includes('role="img"'));
 console.log('NPX biopsy passed: 120 seeded patients/views, ordered work, physical team targets, wrong-tool/label checks, inspection without penalty, support without skipping handoffs, one specimen and one completion, resumable state and unchanged event count.');

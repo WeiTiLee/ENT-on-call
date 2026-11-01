@@ -1,3 +1,4 @@
+import {morningEventIds} from '../dist/game/morning-events.js';
 import assert from 'node:assert/strict';
 import {LOCAL_PROCEDURES,createLocalOR,localAction,localSpot,localTarget,requestLocalSupport,joinLocalSenior,tickLocalRest} from '../dist/game/local-or.js';
 import {localHTML} from '../dist/game/local-or-ui.js';
@@ -40,7 +41,7 @@ for(let i=0;i<100;i++)for(const kind of ['ear','oral']){
   for(const stage of config.stages.slice(0,-1)){const view={...t,stage};assert(!localHTML(view,{near:true}).includes('undefined'));assert(localVisual(view).includes('<svg'));}
 }
 for(let i=0;i<150;i++){
-  const run=createRun({seed:'LOCAL-RUN-'+i});const selected=run.ids.filter(id=>LOCAL_OR_IDS.includes(id));assert.equal(selected.length,run.orPlan.kind==='three-local'?3:2);seen.add(selected[0]);assert.equal(run.phases.find(p=>p.case===selected[0]).clock,810);assert.equal(run.total,27);assert.equal(new Set(run.ids).size,run.total);
+  const run=createRun({seed:'LOCAL-RUN-'+i});const selected=run.ids.filter(id=>LOCAL_OR_IDS.includes(id));assert.equal(selected.length,run.orPlan.kind==='three-local'?3:2);seen.add(selected[0]);assert.equal(run.phases.find(p=>p.case===selected[0]).clock,810);assert.equal(run.total,25+morningEventIds(run.seed).length);assert.equal(new Set(run.ids).size,run.total);
   const decks=partyDecks('LOCAL-PARTY-'+i);assert.equal(new Set(Object.values(decks).flatMap(ids=>ids.filter(id=>LOCAL_OR_IDS.includes(id)))).size,3);
 }
 assert.equal(seen.size,3);assert.equal(lesions.size,3);assert.deepEqual(createState().localOR,{});assert.equal(createState().activeORProcedure,null);assert.equal(createLocalOR('other','test'),null);

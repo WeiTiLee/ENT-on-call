@@ -1,3 +1,4 @@
+import {morningEventIds} from '../dist/game/morning-events.js';
 import assert from 'node:assert/strict';
 import {createBooking,bookingAction,BOOKING_CASES,BOOKING_SLOTS,placeNPXOrder} from '../dist/game/or-work.js';
 import {createNPX,npxAction} from '../dist/game/npx-biopsy.js';
@@ -23,7 +24,7 @@ for(let i=0;i<150;i++){
   assert(bookingAction(t,'leave-slip').completed);assert(!bookingAction(t,'leave-slip').completed,'Leaving the slip emits completion once');
   for(const html of [bookingMemo(t),workForm(t,{booking:true}),bookingReview(t)])assert(!html.includes('undefined'));
   const run=createRun({seed:'BOOK-RUN-'+i});if(run.ids.includes('booking')){inDraw++;const at=run.phases.find(p=>p.case==='booking'),or=run.phases.find(p=>LOCAL_OR_IDS.includes(p.case));assert(at.clock>=510&&at.clock<720);assert(run.phases.indexOf(at)<run.phases.indexOf(or));}
-  assert(run.total===27);
+  assert.equal(run.total,25+morningEventIds(run.seed).length);
 }
 assert.equal(scenarios.size,9);assert(inDraw>0&&inDraw<150,'Booking stays part of the random event pool');
 const t=createNPX('ORDER'),snapshot=JSON.stringify(t);

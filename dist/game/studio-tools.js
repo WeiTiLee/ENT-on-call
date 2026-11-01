@@ -38,7 +38,7 @@ export function createStudioEvent(id,seed,{character='male',name='小值'}={}){
   const s=createState();s.name=name;s.character=character;s.started=true;s.energy=100;s.hunger=100;s.temper=0;s.clock=clock;s.location=c.dest;
   const p={id,case:morning?undefined:id,kind:morning?'morning-work':id==='drink'?'studio-drink':'case',clock,title:c.title,description:'單項試玩；可按「直達下一步」跳到目前的互動位置。',dest:c.dest,spot:c.spot||'nurse',destination:'製作檢視 · '+c.title};
   const phases=id==='rounds'?[{...PHASES.find(p=>p.id==='morning')},p]:[p];
-  if(morning){s.morning=createMorning(seed);if(id==='rounds')s.morning.escort='done';else{printPatientList(s.morning);for(const patient of s.morning.list)visitPatient(s.morning,patient.id);s.morning.focus='nasal';}}
+  if(morning){s.morning=createMorning(seed,id==='nasal-cleaning'?{nasal:true}:{});if(id==='rounds')s.morning.escort='done';else{printPatientList(s.morning);for(const patient of s.morning.list)visitPatient(s.morning,patient.id);s.morning.focus='nasal';}}
   if(id==='drink'){s.orRoom=13;p.orRoom=13;}
   s.run={mode:'studio',studio:true,testId:id,seed,team:'',ids:[id],phases,total:1,maxScore:10,fingerprint:'STUDIO',categories:{}};
   return s;
