@@ -14,7 +14,7 @@ export function createFishCase(seed){
   return{variant,site,patient,stage:'phone',recordReviewed:false,xraySuspicious,xrayAsked:false,xray:xraySuspicious?'NP：「側面影像有看到疑似異物的影像，影像在系統裡可以看。」':'NP：「側面影像沒有看到明確異物，影像在系統裡可以看。」',asked:[],headlamp:false,oralChecked:false,activeSite:null,inspected:[],found:false,tool:null,removed:false,rechecked:false,plan:null,finished:false,point:pick(seed+'|fish-point',[{x:42,y:44},{x:57,y:53},{x:47,y:62}])};
 }
 export const fishSpot=t=>t.stage==='history'&&!t.recordReviewed?'desk':'patient';
-export const fishStageText=t=>t.stage==='history'&&!t.recordReviewed?'到電腦查看線上影像與病歷':({phone:'接聽急診NP來電，安排病人到2G',history:'到診療椅旁，問清時間、魚種與不適位置',oral:'戴頭燈，先看口腔',scope:'用fiber查看四個重要位置',extract:'選魚刺鉗，對準可見魚刺夾取',recheck:'取出後再檢查、詢問症狀',plan:'依本次症狀與懷疑位置安排後續',explain:'說明本次結果與後續安排',done:'魚刺會診已完成'})[t.stage];
+export const fishStageText=t=>t.stage==='history'&&!t.recordReviewed?'到電腦查看影像與病歷':({phone:'接聽急診NP來電，安排病人到2G',history:'到診療椅旁，問清時間、魚種與不適位置',oral:'戴頭燈，先看口腔',scope:'用fiber查看四個重要位置',extract:'選魚刺鉗，對準可見魚刺夾取',recheck:'取出後再檢查、詢問症狀',plan:'依本次症狀與懷疑位置安排後續',explain:'說明本次結果與後續安排',done:'魚刺會診已完成'})[t.stage];
 const fail=(message,penalty=false)=>({ok:false,message,penalty});
 export function fishAction(t,action,value){
   if(!t||t.finished)return fail('這件會診已完成。');

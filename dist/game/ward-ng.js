@@ -2,8 +2,8 @@ import {orderedChoices} from './event-deck.js';
 
 export const NG_WARDS=[
   {ward:'8G 胸腔科',name:'陳志明',age:71,attempt:'我們的住院醫師試過了，這次還是放不進去。',history:'病歷及家屬都確認，沒有頭頸癌病史。',headNeck:false},
-  {ward:'12F 腫瘤科',name:'林惠珍',age:63,attempt:'NP 和住院醫師都試過，這次沒有成功。',history:'有頭頸癌治療病史，治療紀錄在電子病歷裡可以看。',headNeck:true},
-  {ward:'8F 感染科',name:'吳宗宇',age:66,attempt:'我們感染科的住院醫師和 NP 都試過，這次還是放不進去。',history:'病歷與家屬都確認沒有頭頸癌病史，感染科的病歷及處理紀錄在線上系統都看得到。',headNeck:false}
+  {ward:'12F 腫瘤科',name:'林惠珍',age:63,attempt:'NP 和住院醫師都試過，這次沒有成功。',history:'有頭頸癌治療病史。',headNeck:true},
+  {ward:'8F 感染科',name:'吳宗宇',age:66,attempt:'我們感染科的住院醫師和 NP 都試過，這次還是放不進去。',history:'家屬也確認過，沒有頭頸癌病史。',headNeck:false}
 ];
 export const NG_QUESTIONS=[{id:'attempt',text:'你們住院醫師或 NP 試過了嗎？'},{id:'history',text:'病人有沒有頭頸癌病史？'}];
 export function createWardNG(seed,{practice=false}={}){
