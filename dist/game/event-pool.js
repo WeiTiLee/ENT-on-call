@@ -1,3 +1,4 @@
+import {NOSE_EVENT} from './nose-case.js';
 import {FISH_EVENT} from './fish-case.js';
 import {NIGHT_WARD_EVENTS} from './night-ward-calls.js';
 import {CASES as ORIGINAL_CASES} from './ent-data.js';
@@ -25,6 +26,7 @@ export const EVENTS={
   ...NIGHT_WARD_EVENTS,
   ...Object.fromEntries(Object.entries(ORIGINAL_CASES).map(([id,c])=>[id,{...c,callType:'consult',category:categoryOf[id],dest:destOf[id],spot:'patient',orRoom:['tonsil','airway'].includes(id)?16:undefined,brief:briefOf[id]}])),
   fish:FISH_EVENT,
+  nose:NOSE_EVENT,
   sudden:medical({title:'病房會診：突然聽不到',category:'urgent',dest:'g2',source:'院內病房 · 病房護理師',patient:'成人 · 突然出現單側聽力下降',
     call:'病人說聽不清楚，目前狀況穩定，想請 ENT 評估。發作時間與左／右／雙耳還需要問清楚。',
     phoneText:'問清發作時間與左／右／雙耳，請原病房聯絡聽力室儘速安排聽檢',phoneBad:'當作耳屎，直接排下個月門診',phoneWhy:'突然聽力下降要及時評估，不能未檢查就當成耳屎。',
