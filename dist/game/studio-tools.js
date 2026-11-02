@@ -82,3 +82,16 @@ export function createStudioShift(section,seed,profile={}){
   const phases=run.phases.filter(p=>p.kind==='case'&&(section==='night'?p.clock>=1020:p.dest==='f5'));
   s.run={...run,mode:'studio',studio:true,concurrentPreview:true,testId:null,phases:[...phases,{...PHASES.find(p=>p.id==='finish')}],ids:phases.map(p=>p.id),total:phases.length,maxScore:phases.length*10};return s;
 }
+
+export function createStudioEnding(id,seed,profile={}){
+ const s=createState(),run=createRun({seed});Object.assign(s,profile,{started:true,clock:1890,location:'f7',energy:70,hunger:65,temper:25,mode:'walk'});
+ s.run={...run,mode:'studio',studio:true,testId:null};s.completed=[...run.ids];s.phase=run.phases.findIndex(p=>p.kind==='finish');s.stats.meals=1;
+ if(id==='cold'){s.stats.meals=0;s.hunger=20;}
+ else if(id==='pillow')s.stats.woken=3;
+ else if(id==='elevator'){s.stats.elevatorRides=10;s.stats.trips=14;}
+ else if(id==='flammable'){s.temper=90;s.care.rages=1;}
+ else if(id==='calm')s.temper=15;
+ else if(id==='maintenance')s.side.completed=['f7:printer','f7:water'];
+ else throw new Error('找不到這個封號');
+ return s;
+}
