@@ -9,3 +9,13 @@ export function anesthesiaLine(number,clock){
   return clock>=1050?'急刀的資訊先對齊，團隊在這裡。':'這一台的麻醉狀況我顧著，有需要先跟我確認。';
 }
 export function isAnesthesiaCutoff(number,clock){return number===16&&clock>=870&&clock<1050;}
+
+export const seniorOnDuty=clock=>clock%1440>=450&&clock%1440<1050;
+export function seniorInOR(s){
+ if(s.location!=='f5'||s.orRoom!==16)return false;
+ if(seniorOnDuty(s.clock))return true;
+ const active=w=>w?.accepted&&w.seniorCalled&&w.caseMode==='or';
+ if(active(s))return true;
+ return Object.entries(s.dispatch?.work||{}).some(([id,w])=>!s.completed.includes(id)&&active(w));
+}
+export function callOffDutySenior(t){if(!t?.supportRequested||t.seniorJoined||t.stage==='done')return false;t.seniorJoined=true;return true;}

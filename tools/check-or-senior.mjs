@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {seniorOnDuty,seniorInOR,callOffDutySenior} from '../dist/game/or-team.js';
+import {createState} from '../dist/game/ent-data.js';
+import {createRun} from '../dist/game/event-deck.js';
+import {saveWork,selectWork} from '../dist/game/call-scheduler.js';
+assert(seniorOnDuty(450));assert(seniorOnDuty(1049));assert(!seniorOnDuty(1050));assert(!seniorOnDuty(1440));assert(seniorOnDuty(1890));
+const s=createState();s.location='f5';s.orRoom=16;s.clock=840;assert(seniorInOR(s));s.clock=1050;assert(!seniorInOR(s));s.accepted=true;assert(!seniorInOR(s));s.seniorCalled=true;assert(!seniorInOR(s));s.caseMode='or';assert(seniorInOR(s));s.accepted=false;assert(!seniorInOR(s));
+s.dispatch={work:{tonsil:{accepted:true,seniorCalled:true,caseMode:'or'}}};assert(seniorInOR(s));s.completed.push('tonsil');assert(!seniorInOR(s));s.orRoom=13;assert(!seniorInOR(s));
+const t={stage:'sample',supportRequested:false,seniorJoined:false};assert(!callOffDutySenior(t));t.supportRequested=true;assert(callOffDutySenior(t));assert(t.seniorJoined);assert(!callOffDutySenior(t));assert(!callOffDutySenior({stage:'done',supportRequested:true}));
+const shift=createState();shift.run=createRun({seed:'SUPPORT-SAVE'});const indices=shift.run.phases.flatMap((p,i)=>p.case?[i]:[]);shift.phase=indices[0];shift.accepted=true;shift.seniorCalled=true;shift.caseMode='or';saveWork(shift);selectWork(shift,indices[1]);assert(!shift.seniorCalled);selectWork(shift,indices[0]);assert(shift.seniorCalled);assert.equal(createState().seniorCalled,false);
+console.log('OR senior passed: 17:30 shift boundary, no uncalled night resident, task-scoped recalled presence and completion cleanup, phone-only local support, work switching and fresh reset.');

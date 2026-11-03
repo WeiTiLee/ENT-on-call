@@ -15,4 +15,4 @@ const biscuits=foodShelf({discussion:true});assert(biscuits.includes('data-eat-s
 for(const id of ['takoyaki','lunchOrder'])assert.equal(EVENTS[id].spot,'nurse');
 console.log('Ward life passed: station equipment/label alignment, contextual ward marker, all bed occupants, 50 escort visibility cycles, simple single-room labels, nursing-station meal routes and discussion-room biscuits.');
 
-assert.equal(EVENTS.drink.dest,'f5');assert.equal(EVENTS.drink.spot,'or-team-circulator');assert.equal(EVENTS.drink.trigger,'or-entry');
+assert.equal(EVENTS.drink.dest,'f5');assert.equal(EVENTS.drink.spot,'or-team-circulator');assert.equal(EVENTS.drink.trigger,'or-busy-call');

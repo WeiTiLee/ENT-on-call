@@ -2,8 +2,8 @@ import {dayClockRate,spendShiftTime} from './day-pacing.js';
 import {openingClockRate} from './morning-opening.js';
 import {EVENTS} from './event-pool.js';
 // Phone arrivals follow the shift clock; selected work is a separate, resumable context.
-const WORK_FIELDS=['accepted','activeDest','caseStep','caseMode','awaitingDesk','clinicCallDeferred','activeORProcedure'];
-const defaults={accepted:false,activeDest:null,caseStep:0,caseMode:'patient',awaitingDesk:false,clinicCallDeferred:false,activeORProcedure:null};
+const WORK_FIELDS=['accepted','seniorCalled','activeDest','caseStep','caseMode','awaitingDesk','clinicCallDeferred','activeORProcedure'];
+const defaults={accepted:false,seniorCalled:false,activeDest:null,caseStep:0,caseMode:'patient',awaitingDesk:false,clinicCallDeferred:false,activeORProcedure:null};
 export const parallelCalls=s=>!!s.run&&!s.explore&&(!s.run.studio||!!s.run.concurrentPreview);
 export function dispatchState(s){return s.dispatch??={released:[],work:{},handled:[]};}
 export const callAllowed=(s,call)=>s.location!=='f5'||EVENTS[call.caseId??call.case]?.callType!=='consult';

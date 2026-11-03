@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createState} from '../dist/game/ent-data.js';
 import {EVENTS,FIXED_ORDER_IDS} from '../dist/game/event-pool.js';
 import {createRun,resultScore} from '../dist/game/event-deck.js';
-import {createFoodState,orderFood,foodStatus,pendingFood,stationSupplies,collectFood,focusFood,focusedFood,foodArrivals,releaseORDrinks,orDrinkAvailable,answerORDrink} from '../dist/game/meal-breaks.js';
+import {createFoodState,orderFood,foodStatus,pendingFood,stationSupplies,collectFood,focusFood,focusedFood,foodArrivals,releaseORDrinks,orDrinkAvailable,answerORDrink,tickORDrink,OR_DRINK_DELAY} from '../dist/game/meal-breaks.js';
 import {eatSupply} from '../dist/game/vitals.js';
 import {foodShelf} from '../dist/game/self-care-ui.js';
 import {BULLETINS} from '../dist/game/scene-life.js';
@@ -30,3 +30,15 @@ const combinations=new Set();for(let i=0;i<500;i++){const run=createRun({seed:'M
 assert(OR_DINING.x>20);assert(OR_DINING.spot.x>23);assert(OR_DINING.x+OR_DINING.w/2<41.5);assert(OR_DINING.z+OR_DINING.d/2<29.4);assert(operatingPlanSVG().includes('餐廳'));
 assert.equal(BULLETINS.length,6);const notices=BULLETINS.map(n=>n.title+n.text).join('');for(const text of ['兩位蔡教授','芥末','焦糖','烏龍茶','巧克力','初診間的筆','冰便當','脾氣越來越差','本遊戲虛構研究','內外科住院醫師短缺','歡迎投單'])assert(notices.includes(text),text);
 console.log('Meals passed: 500 varied 26–27-task runs; 16:30/18:00 dinner, OR-entry-only drink/decline, embedded scoring with procedure preserved, exit delivery, separate ward/restaurant pickup, repeat prevention, practice isolation and right-side dining layout.');
+
+for(const room of [13,16]){
+ const t=createState();t.started=true;t.run=createRun({seed:'DELAY'});t.location='f5';t.orRoom=room;t.mode='walk';
+ assert(!tickORDrink(t,100));assert(!t.food.drinkOffered);assert.equal(t.food.drinkWorkElapsed,0);
+ assert(!tickORDrink(t,1,{working:true}));assert(t.food.drinkWorkStarted);assert.equal(t.food.drinkRoom,room);
+ t.mode='pause';assert(!tickORDrink(t,100));assert.equal(t.food.drinkWorkElapsed,1);
+ t.mode='walk';t.orRoom=null;assert(!tickORDrink(t,100));assert.equal(t.food.drinkWorkElapsed,1);t.orRoom=room;
+ assert(tickORDrink(t,OR_DRINK_DELAY-1));assert(t.food.drinkOffered);assert(!tickORDrink(t,100));
+ t.location='g2';t.orRoom=null;assert(orDrinkAvailable(t),'An arrived phone can still be answered after leaving the room');assert(answerORDrink(t,{drink:true}));assert.equal(t.food.orders.length,1);assert(!tickORDrink(t,100,{working:true}));
+}
+const fresh=createState();fresh.started=true;fresh.run=createRun({seed:'FRESH'});fresh.location='f5';fresh.orRoom=13;fresh.explore=true;assert(!tickORDrink(fresh,100,{working:true}));fresh.explore=false;for(const mode of ['studio','help','end']){fresh.mode=mode;assert(!tickORDrink(fresh,100,{working:true}));}assert(!fresh.food.drinkOffered);assert.equal(createFoodState().drinkWorkElapsed,0);
+console.log('Drink delay passed: no entry popup, work-before-delay, active 12 seconds, pause/corridor/exploration guards, one call, remote reply and fresh reset.');
