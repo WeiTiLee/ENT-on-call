@@ -95,3 +95,8 @@ export function createStudioEnding(id,seed,profile={}){
  else throw new Error('找不到這個封號');
  return s;
 }
+
+export function createStudioStory(id,seed,profile={}){
+ const s=createStudioEnding('calm',seed,profile),target={breakfast:97,bento:82,elevator:67,escape:42}[id];if(target===undefined)throw new Error('找不到這個結局');
+ s.energy=90;s.hunger=90;s.temper=10;s.completed=s.run.ids.slice(0,Math.max(0,Math.min(s.run.total,Math.round((target-27)/70*s.run.total))));return s;
+}
