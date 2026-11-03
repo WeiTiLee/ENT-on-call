@@ -1,3 +1,4 @@
+import {createLeak,leakAction,leakTick,leakHTML} from './leak-activities.js';
 import {NOSE_EVENT,createNoseCase,noseAction,noseStageText} from './nose-case.js';
 import {noseHTML,nosePhoneHTML,bindNose} from './nose-ui.js';
 import {ENDING_BADGES,endingBadge,recordTravel} from './ending-badges.js';
@@ -673,7 +674,20 @@ function renderHearingGame(message=''){
 function hearingHandoffCard(){const task=S.hearing,g=HEARING_GRADES.find(g=>g.id===task.diagnosis);modal(`${topLine('聽障殘冊 · 文件完成')}<span class="modal-tag">03 交給診間護理師</span><h2 id="modalTitle">算完了，還要記得交出去。</h2>${hearingResultHTML(task)}<div class="hearing-stamp">${esc(g.id)}<strong>${esc(g.label)}</strong></div><div class="dialogue">小禾：「醫師，殘冊算好了嗎？」<br>你把結果填好，把文件拿起來。<br><br>小禾從隔壁診間過來了。到門口把文件交給她，才算完成。</div><button id="hearingToNurse" class="primary-button">拿著文件，走向小禾 →</button>`,{kind:'hearing'});$('hearingToNurse').onclick=()=>{closeModal();renderHUD();const nurse=world.spots.find(s=>s.id==='clinic-nurse');if(nurse)world.walkToSpot(nurse.id);};}
 function handOverHearing(){const task=S.hearing,g=HEARING_GRADES.find(g=>g.id===task.diagnosis);modal(`${topLine('2G · 診間護理師 小禾')}<h2 id="modalTitle">醫師，這份我收到了。</h2><div class="dialogue">你：「${esc(task.patient.name)}，雙耳整體障礙比率 ${task.result.binaural.toFixed(1)}%，${esc(g.id)}，${esc(g.label)}。」<br><br>小禾：「好，資料和結果都在這裡，我接著處理。」</div><button id="hearingHandIn" class="primary-button">交出文件，完成這件事 ✓</button>`,{kind:'case'});$('hearingHandIn').onclick=()=>{if(!handInHearing(task))return;spendShiftTime(S,5);if(task.practice){reply('殘冊練習完成。','資料核對、計算、分級和交接，都接好了。正式值班抽到這件事時，也要交給護理師才完成。',closeModal,'繼續逛診間');return;}finishCase('小禾收下殘冊。你終於可以把這份數字從腦中清出去，接續初診間的工作。');};}
 
-function sideActivity(id){
+function leakActivity(){
+ const key=activityKey(S.location,S.orRoom,'water'),room=S.orRoom,place=room?room+'房':LOCATIONS[S.location].code;
+ if(S.side.completed.includes(key)){reply('漏水彩蛋已完成',room?'流動已協助隔離漏水區、聯絡報修，污染物品也換好了。':'水桶已放好，公務課已收到報修，提醒同事留意濕滑處。',closeModal);return;}
+ let state=S.side.sessions[key];if(!state?.kind)state=S.side.sessions[key]=createLeak(room,S.run?.seed||'ENT');
+ let timer=null,unwatch=()=>{};const stopTimer=()=>{clearInterval(timer);unwatch();unwatch=()=>{};};
+ const finish=()=>{stopTimer();const relief=finishSideActivity(S.side,key);if(!relief)return;changeTemper(-relief);spendShiftTime(S,2);plog(place+' · 漏水已處理，脾氣 −'+relief+'。');buildMarkers();reply(room?'刷手：「還好，差點整台重鋪。」':'3000，公務課收到。',room?'器械桌移到乾燥區，污染物品已更換；流動接手聯絡報修。':'水桶接住滴水，已說明位置與漏水狀況。至少這次不用自己修冷氣。',closeModal,'脾氣 −'+relief+' · 繼續工作');};
+ const draw=(message='')=>{
+  stopTimer();const scroll=$('modalCard').scrollTop;modal(`${topLine(place+' · 漏水彩蛋')}${leakHTML(state,place)}<p id="leakFeedback" class="activity-feedback" role="status">${esc(message||'可隨時先離開，進度保留。')}</p><button id="leakLater" class="secondary-button">先忙別的，等一下再來</button>`,{kind:'chore',wide:true});
+  document.querySelectorAll('[data-leak-action],[data-object-action]').forEach(b=>b.onclick=()=>{if(S.mode!=='chore')return;const r=leakAction(state,b.dataset.leakAction||b.dataset.objectAction);if(r.completed)finish();else draw(r.message);});
+  $('leakLater').onclick=()=>{stopTimer();closeModal();};
+  $('modalCard').scrollTop=scroll;const clock=$('orLeakTimer');if(clock){let last=performance.now();const resetClock=()=>{last=performance.now();};document.addEventListener('visibilitychange',resetClock);unwatch=()=>document.removeEventListener('visibilitychange',resetClock);timer=setInterval(()=>{const now=performance.now(),delta=(now-last)/1000;last=now;if(S.mode!=='chore'||!clock.isConnected||S.side.sessions[key]!==state){stopTimer();return;}if(document.hidden)return;if(leakTick(state,delta)){draw('先整理再重試，不扣任務分。');return;}clock.textContent=Math.ceil(state.remaining);},100);}
+ };draw();
+}
+function sideActivity(id){if(id==='water'){leakActivity();return;}
   const config=SIDE_ACTIVITIES[id],key=activityKey(S.location,S.orRoom,id),place=S.orRoom?S.orRoom+'房':LOCATIONS[S.location].code;
   if(S.side.completed.includes(key)){reply(config.done,id==='water'?'公務課已收到報修，現場已提醒同事留意；等他們來處理。':'剛剛已經處理好了。你決定先享受這一刻的和平。',closeModal);return;}
   const finish=()=>{const relief=finishSideActivity(S.side,key);if(!relief)return;changeTemper(-relief);spendShiftTime(S,2);plog(place+' · '+config.done+'，脾氣 −'+relief+'。');buildMarkers();reply(id==='printer'?'喀啦——終於印出來了。':id==='water'?'3000，公務課收到。':'這次抽得到紙了。',id==='printer'?'印表機吐出五張重複的單子。原來剛剛每次按列印，它都有記仇。':id==='water'?'你說明位置與漏水狀況，提醒同事避開濕滑處。至少這次，不用自己修冷氣。':'你把新的一包放好，又在旁邊多留一包。希望下一個空盒，不會又是你遇到。',closeModal,'脾氣 −'+relief+' · 繼續工作');};
