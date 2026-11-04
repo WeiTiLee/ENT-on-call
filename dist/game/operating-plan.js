@@ -22,6 +22,7 @@ export const OR_INTERIORS=[13,16];
 export function operatingDoor(number){const r=OR_ROOMS.find(r=>r.number===number);return r?{x:r.x,z:r.z+(r.doorSide==='south'?1:-1)*(r.d/2+1.4)}:null;}
 export function operatingViewTarget(target,room=null){if(!room)return target;return{...target,spot:target.dest==='f5'&&target.spot===operatingSpot(room)?'operation':'or-exit'};}
 export function operatingTarget(event={},caseMode='patient'){
+  if(event.wardOnly)return{dest:event.dest,spot:event.spot};
   return{dest:caseMode==='or'?'f5':event.dest,spot:caseMode==='or'||event.spot==='operation'?operatingSpot(event.orRoom||16):event.spot};
 }
 export function operatingPlanSVG(){

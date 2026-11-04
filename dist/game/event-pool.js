@@ -1,3 +1,4 @@
+import {OSA_EVENT} from './osa-bleeding.js';
 import {NOSE_EVENT} from './nose-case.js';
 import {FISH_EVENT} from './fish-case.js';
 import {NIGHT_WARD_EVENTS} from './night-ward-calls.js';
@@ -21,12 +22,13 @@ function outpatient(data){return{...data,category:'routine',dest:'g2',spot:data.
   phone:[{text:'拋下病房病人，直接下樓',dest:'g2',outpatientAction:'leave',reply:'你先往樓下走。未完成的查房與清鼻子，仍留在病房待辦。'},{text:'請病人稍等一下，我先查完房再下樓',dest:'g2',outpatientAction:'finish-rounds',reply:'小禾：「好，我先請病人等一下，你查完房再下來。」'},{text:'直接掛電話',dest:'g2',outpatientAction:'hangup',reply:'你掛掉電話。過了一下，診間的分機又打來了。'}]};}
 const categoryOf={fish:'routine',blueberry:'urgent',nose:'routine',tonsil:'urgent',cockroach:'odd',airway:'urgent'};
 const destOf={fish:'g2',blueberry:'f1',nose:'g2',tonsil:'f7',cockroach:'g2',airway:'f1'};
-const briefOf={fish:'魚刺、病史與最後一餐的誓言。',blueberry:'會診單只有兩個字，呼吸狀況不能只看標題。',nose:'衛生紙的量不能代替完整評估。',tonsil:'術後出血到場評估，接上學長與刀房。',cockroach:'耳朵裡的不速之客，取出後睡意也不見了。',airway:'急診、麻醉與學長共同到場，確認分工。'};
+const briefOf={fish:'魚刺、病史與最後一餐的誓言。',blueberry:'會診單只有兩個字，呼吸狀況不能只看標題。',nose:'衛生紙的量不能代替完整評估。',tonsil:OSA_EVENT.brief,cockroach:'耳朵裡的不速之客，取出後睡意也不見了。',airway:'急診、麻醉與學長共同到場，確認分工。'};
 export const EVENTS={
   ...NIGHT_WARD_EVENTS,
   ...Object.fromEntries(Object.entries(ORIGINAL_CASES).map(([id,c])=>[id,{...c,callType:'consult',category:categoryOf[id],dest:destOf[id],spot:'patient',orRoom:['tonsil','airway'].includes(id)?16:undefined,brief:briefOf[id]}])),
   fish:FISH_EVENT,
   nose:NOSE_EVENT,
+  tonsil:OSA_EVENT,
   sudden:medical({title:'病房會診：突然聽不到',category:'urgent',dest:'g2',source:'院內病房 · 病房護理師',patient:'成人 · 突然出現單側聽力下降',
     call:'病人說聽不清楚，目前狀況穩定，想請 ENT 評估。發作時間與左／右／雙耳還需要問清楚。',
     phoneText:'問清發作時間與左／右／雙耳，請原病房聯絡聽力室儘速安排聽檢',phoneBad:'當作耳屎，直接排下個月門診',phoneWhy:'突然聽力下降要及時評估，不能未檢查就當成耳屎。',

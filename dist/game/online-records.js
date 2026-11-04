@@ -3,6 +3,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 export function onlineRecords(s,events={}){
   const records=[],add=r=>{if(!records.some(x=>x.id===r.id))records.push(r);};
   if(s.fish){const t=s.fish;add({id:'fish',name:t.patient.name,title:'魚刺會診',rows:[['主訴','吃魚後喉嚨異物感，急診初評呼吸平順。'],['檢查','Lateral view 已完成。']],reportTitle:'Lateral view',reportText:t.xray.replace(/^NP：「|」$/g,''),type:'xray',suspected:t.xraySuspicious});}
+  if(s.osaBleed){const t=s.osaBleed;add({id:'tonsil',name:t.patient.bed+' · '+t.patient.name,title:'達文西OSA術後第5天吐血',rows:[['病房','7F'],['目前狀況',t.finished?'本次床邊處理後出血已控制，持續住院觀察。':'主護通報吐血，接續床邊評估與處理。']]});}
   if(s.wardNG){const p=s.wardNG.patient;add({id:'ng',name:p.name,title:'NG 放置困難',rows:[['原病房',p.ward],['先前處理',p.attempt],['相關病史',p.history],['紀錄','會診與先前放置紀錄。']]});}
   if(s.hearingConsult){const t=s.hearingConsult,p=t.patient,ready=['call-patient','review','history','plan','steroid-review','clean','recheck','report','done'].includes(t.stage);add({id:'sudden',name:p.name,title:'聽力會診',rows:[['原病房',p.ward],['主訴',p.sideText+'聽不清楚'],['病史／用藥',p.chronic],['檢查狀態',ready?'聽力檢查已完成。':'聽力檢查尚未完成。']],reportTitle:ready?'聽力圖':null,type:'consult'});}
   if(s.hearing){add({id:'hearing-paperwork',name:s.hearing.patient.name,title:'聽障鑑定',rows:[['檢查','讀取聽力圖上的左右耳四頻數值。'],['文件','鑑定文件仍依本次門診流程交給診間護理師。']],reportTitle:'聽力圖',type:'hearing'});}

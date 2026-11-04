@@ -1,3 +1,5 @@
+import {OSA_EVENT,createOSABleed,osaAction,osaTarget,osaStageText} from './osa-bleeding.js';
+import {osaHTML,osaPhoneHTML,bindOSA} from './osa-ui.js';
 import {ENDING_STORIES,createEnding,endingDue,advanceEnding,revealEnding} from './endings.js';
 import {endingHTML} from './endings-ui.js';
 import {seniorOnDuty,seniorInOR,callOffDutySenior} from './or-team.js';
@@ -171,6 +173,7 @@ function getTarget(){
   if(wardFocused())return operatingViewTarget(morningTarget(S.morning)||{dest:'f7',spot:'nurse'},S.orRoom);
   if(currentWardCall()?.id==='wardConsent')return operatingViewTarget({dest:'f7',spot:consentSpot(currentWardCall())},S.orRoom);
   if(currentWardCall())return wardComputerTarget(S.location,S.orRoom);
+  if(currentOSA())return operatingViewTarget(osaTarget(currentOSA()),S.orRoom);
   if(currentNose())return operatingViewTarget({dest:currentNose().dest,spot:'patient'},S.orRoom);
   if(currentFish())return operatingViewTarget({dest:'g2',spot:fishSpot(currentFish())},S.orRoom);
   if(currentConsult())return operatingViewTarget({dest:'g2',spot:consultSpot(currentConsult())},S.orRoom);
@@ -235,7 +238,7 @@ function renderHUD(){const supportProcedure=currentLocalOR()||currentNPX();if(wo
     $('residentThought').textContent=S.temper>=75?'我需要一點安靜，還有一口飯。':S.temper>=60?'先深呼吸，這通我還是會接。':S.energy<35?'先喝口水，再把事情接好。':isWaitingCall()?'好，先把電話聽完。':S.clock>=1440&&S.clock<1800?'我才剛躺下。':S.location==='f5'?'手穩，肩膀放鬆。':'今天應該很平靜。';
     const artIndex=sceneIndex(S.location,{dawn:S.clock>=1800});if($('locationArt').dataset.scene!==String(artIndex)){$('locationArt').dataset.scene=String(artIndex);$('locationArt').innerHTML=sceneSVG(artIndex);}$('postcardCaption').textContent=l.code+' / '+(S.orRoom?S.orRoom+'房':l.name);
     if(S.explore&&S.orRoom&&!hasORList(S.orLists,S.orRoom)){$('missionTitle').textContent='先問流動今天有哪些刀';$('missionDescription').textContent='向流動拿一張今天的手術清單，也可以問音響在哪裡。';$('missionDestination').textContent=S.orRoom+'房 · 流動';}
-    let pacing=$('dayPacingHint');if(!pacing){pacing=document.createElement('p');pacing.id='dayPacingHint';pacing.className='day-pacing-hint';$('missionDescription').after(pacing);}pacing.textContent=dayPacingHint(S);pacing.hidden=!pacing.textContent;renderNPXHUD();renderLocalORHUD();renderBookingHUD();renderContactHUD();renderMorningHUD();renderOpeningHUD();renderConsentHUD();renderWardQuickHUD();renderFishHUD();renderNoseHUD();renderFoodHUD();renderSelfCareHUD();renderVitalHUD();renderPending();world?.setGoal(currentGoal());
+    let pacing=$('dayPacingHint');if(!pacing){pacing=document.createElement('p');pacing.id='dayPacingHint';pacing.className='day-pacing-hint';$('missionDescription').after(pacing);}pacing.textContent=dayPacingHint(S);pacing.hidden=!pacing.textContent;renderNPXHUD();renderLocalORHUD();renderBookingHUD();renderContactHUD();renderMorningHUD();renderOpeningHUD();renderConsentHUD();renderWardQuickHUD();renderFishHUD();renderNoseHUD();renderOSAHUD();renderFoodHUD();renderSelfCareHUD();renderVitalHUD();renderPending();world?.setGoal(currentGoal());
 }
 function workHint(p){
   if(NIGHT_WARD_IDS.includes(p.case)){const t=S.wardCalls[p.id];return p.case==='wardConsent'?(t?consentStageText(t):'7F 護理站 · 平板簽名'):'任意電腦 · '+(t?t.patient.bed+' '+t.patient.name+' · '+t.item:'處理病房請託');}
@@ -243,6 +246,7 @@ function workHint(p){
   if(LOCAL_OR_IDS.includes(p.case)){const t=S.localOR[CASES[p.case].localProcedure];return '13房 · '+(t?localTitle(t):'核對病人，再接續這台');}
   if(p.work.caseMode==='or'||p.case==='orSenior')return '16房 · '+(p.work.caseMode==='or'?'手術台協助操作':'接上學長的工作');
   const t=S.tubes[p.case];if(t)return '2G · '+tubeStageText(t);
+  if(p.case==='tonsil'&&S.osaBleed)return (S.osaBleed.stage==='pickup'?'2G':'7F23A')+' · '+osaStageText(S.osaBleed);
   if(p.case==='nose'&&S.nose)return (S.nose.dest==='f1'?'1F':'2G')+' · '+noseStageText(S.nose);
   if(p.case==='fish'&&S.fish)return '2G · '+fishStageText(S.fish);
   if(p.case==='ng'&&S.wardNG)return '2G · '+ngStageText(S.wardNG);
@@ -304,6 +308,7 @@ function guide(){if(!S.started||S.mode!=='walk')return;if(S.opening?.focused&&!S
 function answerCall(id=calls[0]?.id){const call=calls.find(c=>c.id===id);if(call&&!callAllowed(S,call)){calls=deferUnavailableCalls(S,calls);renderHUD();return;}if(call?.kind==='conference'){answerConferencePhone(call);return;}if(call?.kind==='drink'&&['walk','sleep'].includes(S.mode)){if(S.mode==='sleep'){S.stats.woken++;S.stats.restSeconds+=restTimer;restTimer=0;}offerORDrink(call);return;}if(!call||call.kind!=='case')return;if(S.mode!=='walk'&&S.mode!=='sleep')return;if(S.mode==='sleep'){S.stats.woken++;S.stats.restSeconds+=restTimer;restTimer=0;plog('你剛躺下不久，電話就響了。');}
 S.food.focus=null;S.food.drinkSeeking=false;if(S.opening)S.opening.focused=false;S.answeringCallId=id;
 if(parallelCalls(S)){const index=S.run.phases.findIndex(p=>p.id===call.id||call.audiology&&p.case===call.caseId);if(index<0)return;selectWork(S,index);}
+if(call.caseId==='tonsil'){openOSAPhone(call);return;}
 if(call.caseId==='nose'){openNosePhone(call);return;}
 if(call.caseId==='fish'){openFishPhone(call);return;}
 if(call.caseId==='ng'){openNGPhone(call);return;}
@@ -342,6 +347,18 @@ function showOnlineRecord(id,tab='chart'){
   document.querySelectorAll('[data-record-tab]').forEach(b=>b.onclick=()=>showOnlineRecord(id,b.dataset.recordTab));$('onlineRecordList').onclick=showOnlineRecords;
   $('onlineRecordDone').onclick=()=>{if(!nearAnyComputer())return;if(firstRead&&fishAction(fish,'read-record').ok){plog('已在電腦查看 '+fish.patient.name+' 的病歷與lateral view。');walkToClinicSpot('patient');}else closeModal();};
 }
+
+function ensureOSA(){return S.osaBleed??=createOSABleed((S.run?.seed||'ENT')+'|'+(S.run?.team||''));}
+function currentOSA(){return !S.explore&&S.accepted&&phase().case==='tonsil'&&S.osaBleed&&!S.osaBleed.finished?S.osaBleed:null;}
+function openOSAPhone(call){const t=ensureOSA();if(t.stage!=='phone')return;
+ modal(`${topLine('7F · 主護')}${osaPhoneHTML(t)}`,{kind:'call'});
+ bindOSA({later:closeModal,act:(action,value)=>{if(S.mode!=='call'||t!==S.osaBleed)return;const r=osaAction(t,action,value);if(!r.ok){if(r.penalty)recordMistake();$('osaFeedback').textContent=r.message;return;}if(r.accepted){removeCall(call.id);S.accepted=true;S.activeDest=osaTarget(t).dest;S.caseMode='patient';S.seniorCalled=false;if(S.morning?.active)S.morning.focus='call';plog('7F23A OSA術後吐血：已問量與vital signs、交代含冰水和坐高。'+(t.route==='direct'?'直接到床邊。':'先到2G拿fiber，再到床邊。'));closeModal();renderHUD();}else openOSAPhone(call);}});
+}
+function renderOSA(message=''){const t=currentOSA();if(!t)return;const target=osaTarget(t);if(!nearWorkSpot(target.spot,target.dest))return;
+ modal(`${topLine('7F23A · OSA術後吐血')}${osaHTML(t,message)}`,{kind:'osa',wide:true});
+ bindOSA({later:closeModal,act:(action,value)=>{const target=osaTarget(t);if(currentOSA()!==t||S.mode!=='osa'||!nearWorkSpot(target.spot,target.dest))return;const r=osaAction(t,action,value);if(!r.ok){if(r.penalty)recordMistake();$('osaFeedback').textContent=r.message;renderHUD();return;}if(r.completed){spendShiftTime(S,8);finishCase(r.message);return;}if(r.travel){S.activeDest='f7';closeModal();toast(r.message);renderHUD();return;}renderOSA(r.message||'');renderHUD();}});
+}
+function renderOSAHUD(){const t=currentOSA();if(!t)return;$('missionIndex').textContent='病房急call · OSA術後吐血';$('missionTitle').textContent=osaStageText(t);$('missionDescription').textContent=t.patient.bed+' · '+t.patient.name+' · 已完成的檢查與處理進度會保留。';$('missionDestination').textContent=t.stage==='pickup'?'2G 初診間 · Fiber':'7F23A · 床邊';}
 
 function ensureNose(){return S.nose??=createNoseCase((S.run?.seed||'ENT')+'|'+(S.run?.team||''));}
 function currentNose(){return !S.explore&&S.accepted&&phase().case==='nose'&&S.nose&&!S.nose.finished?S.nose:null;}
@@ -477,7 +494,7 @@ function renderWardQuickHUD(){
   const target=wardComputerTarget(S.location,S.orRoom);$('missionIndex').textContent='病房小 call';$('missionTitle').textContent='找電腦 · '+t.item;$('missionDescription').textContent='不用特別回病房，任意一台可操作的電腦都能處理。';$('missionDestination').textContent=target.dest==='f5'?'13／16房 · 電腦':target.dest==='g2'?'2G 初診間 · 電腦':'7F 護理站 · 電腦';
 }
 
-function renderCase(){if(phase().case==='nose'){renderNose();return;}if(phase().case==='fish'){renderFish();return;}if(NIGHT_WARD_IDS.includes(phase().case)){renderWardCall();return;}if(phase().case==='contact'){renderContact();return;}if(phase().case==='booking'){loginComputer(renderBooking);return;}if(LOCAL_OR_IDS.includes(phase().case)){ensureORProcedure();if(currentLocalOR())renderLocalOR();else renderNPX();return;}if(phase().case==='sudden'){renderConsult();return;}if(phase().case==='ng'){renderNGPatient();return;}if(TUBE_CASES.includes(phase().case)){renderTubeGame();return;}if(phase().case==='outpatientPaperwork'){openHearingGame();return;}const c=CASES[phase().case],step=c.steps[S.caseStep];if(!step)return;const options=shuffledOptions(step.options,'step'+S.caseStep);modal(`${topLine(S.location==='f5'?operatingLabel(assignedOR()):LOCATIONS[S.location].code+' · 現場事件')}<span class="modal-tag ${c.urgent?'urgent':''}">${esc(c.tag)}</span><h2 id="modalTitle">${esc(c.title)}</h2><p class="modal-copy">${esc(c.patient)}</p>${S.caseStep===0?`<div class="dialogue">${lines(c.intro)}</div>`:''}<p class="modal-copy"><b>${esc(step.ask)}</b></p>${choiceList(options)}`,{kind:'case'});bindChoices(i=>{const o=options[i];if(!o.good){recordMistake();reply('再想一下',o.reply,renderCase,'回到現場');return;}if(o.support){S.seniorCalled=true;S.stats.support++;}if(o.action==='or'){S.caseMode='or';S.activeDest='f5';reply('接上刀房團隊',o.reply+'\n流動來電：請到 '+assignedOR()+' 號，團隊在裡面等你。',()=>{closeModal();renderHUD();},'前往 '+assignedOR()+' 號刀房');return;}S.caseStep++;if(S.caseStep>=c.steps.length)finishCase(o.reply);else reply('現場回應',o.reply,renderCase);});}
+function renderCase(){if(phase().case==='tonsil'){renderOSA();return;}if(phase().case==='nose'){renderNose();return;}if(phase().case==='fish'){renderFish();return;}if(NIGHT_WARD_IDS.includes(phase().case)){renderWardCall();return;}if(phase().case==='contact'){renderContact();return;}if(phase().case==='booking'){loginComputer(renderBooking);return;}if(LOCAL_OR_IDS.includes(phase().case)){ensureORProcedure();if(currentLocalOR())renderLocalOR();else renderNPX();return;}if(phase().case==='sudden'){renderConsult();return;}if(phase().case==='ng'){renderNGPatient();return;}if(TUBE_CASES.includes(phase().case)){renderTubeGame();return;}if(phase().case==='outpatientPaperwork'){openHearingGame();return;}const c=CASES[phase().case],step=c.steps[S.caseStep];if(!step)return;const options=shuffledOptions(step.options,'step'+S.caseStep);modal(`${topLine(S.location==='f5'?operatingLabel(assignedOR()):LOCATIONS[S.location].code+' · 現場事件')}<span class="modal-tag ${c.urgent?'urgent':''}">${esc(c.tag)}</span><h2 id="modalTitle">${esc(c.title)}</h2><p class="modal-copy">${esc(c.patient)}</p>${S.caseStep===0?`<div class="dialogue">${lines(c.intro)}</div>`:''}<p class="modal-copy"><b>${esc(step.ask)}</b></p>${choiceList(options)}`,{kind:'case'});bindChoices(i=>{const o=options[i];if(!o.good){recordMistake();reply('再想一下',o.reply,renderCase,'回到現場');return;}if(o.support){S.seniorCalled=true;S.stats.support++;}if(o.action==='or'){S.caseMode='or';S.activeDest='f5';reply('接上刀房團隊',o.reply+'\n流動來電：請到 '+assignedOR()+' 號，團隊在裡面等你。',()=>{closeModal();renderHUD();},'前往 '+assignedOR()+' 號刀房');return;}S.caseStep++;if(S.caseStep>=c.steps.length)finishCase(o.reply);else reply('現場回應',o.reply,renderCase);});}
 function finishCase(text){const id=phase().id;if(!S.completed.includes(id)){S.completed.push(id);applyEffects(caseData(id).effect);workVitals(S);plog(`${caseData(id).title}完成 · ${eventPoints(id,S.eventErrors)} / 10 分`);buildMarkers();}if(S.morning?.printed)S.morning.firstCallDone=true;S.accepted=false;reply('這件事，收好尾了。',text+(S.morning?.active?'\n\n病房待辦仍保留；先接續診間工作，有空再回去處理。':''),S.run?.studio&&!parallelCalls(S)?showStudioResult:advance,S.run?.studio&&!parallelCalls(S)?'查看單項試玩結果':'接續今天的工作');renderHUD();}
 function handover(){if(!S.explore&&S.clock>=1890){beginEnding();return;}if(S.opening&&!S.opening.checked){showMorningCalendar();return;}if(phase().id==='morning'||parallelCalls(S)&&S.morning&&!S.morning.printed){reply('先把今天的名單印出來。',`在護理站電腦打開 patient list，準備列印今天要查房的名單。\n\n依名單自行走到每一床，確認病人現況與今日計畫。若名單中有 SMP 術後病人，整份名單查完後，再帶到 7F 檢查室清鼻子。\n\n08:30 以後，診間會打來通知門診工作，下午學長再找你進刀房；未完成的工作會留在待辦清單。`,()=>{if(!printPatientList(S.morning))return;if(S.opening)S.opening.focused=false;plog('在護理站印出 patient list，開始依名單查房。');advance();syncMorning();showPatientList();},'列印 patient list');}else if(S.morning?.active){reply('病房待辦還留著。','有空時再回去接續處理，07:30會自動進入結尾。',()=>{S.morning.focus=roundsComplete(S.morning)?'nasal':'rounds';closeModal();syncMorning();guide();},'回到病房待辦');}else reply('護理站','先接續手邊的工作，這一班會在07:30收尾。',closeModal);}
 function closestRestSpot(){return world?.spots.filter(s=>s.restPose&&canUseDutyRoom(s,S.character)).sort((a,b)=>Math.hypot(a.x-world.position.x,a.z-world.position.z)-Math.hypot(b.x-world.position.x,b.z-world.position.z))[0];}
@@ -738,6 +755,7 @@ const consent=currentWardCall();if(consent?.id==='wardConsent'&&s.id===consentSp
 if(S.orRoom===13&&s.id==='operation'){if(currentLocalOR())renderLocalOR();else if(currentNPX())renderNPX();else if(S.explore)showLocalORMenu();else if(S.accepted&&LOCAL_OR_IDS.includes(phase().case)){ensureORProcedure();if(currentLocalOR())renderLocalOR();else renderNPX();}else if(isWaitingCall()){if(calls.length)answerCall();else toast('電話就要響了，等一下。');}else reply('13房','目前沒有指派這一台的工作。',closeModal);return;}
 if(currentWardCall()&&currentWardCall().id!=='wardConsent'&&isWardComputer(S.location,S.orRoom,s.id)){renderWardCall();return;}
 if(currentFish()&&!currentFish().recordReviewed&&isWardComputer(S.location,S.orRoom,s.id)){showOnlineRecord('fish','report');return;}
+if(s.id==='clinic-fiber'){if(currentOSA()?.stage==='pickup')renderOSA();else reply('Fiber','這是初診間的fiber，有需要時再取用。',closeModal);return;}
 if(s.id==='or-computer'){loginComputer(()=>showORComputer());return;}if(s.id==='or-radio'){showMusic();return;}if(s.id.startsWith('or-team-')){showORTeam(s.id.slice(8));return;}if(s.id==='or-exit'){leaveOperatingRoom();return;}if(s.orRoom&&OR_INTERIORS.includes(s.orRoom)){enterOperatingRoom(s.orRoom);return;}
 if(currentFish()&&s.id==='patient'){renderFish();return;}
 const tube=currentTube(),ng=currentNG(),hc=currentConsult();

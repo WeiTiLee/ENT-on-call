@@ -13,7 +13,7 @@ assert.equal(ent.x,local.x);assert.equal(ent.z,-local.z);
 assert.deepEqual(operatingTarget(EVENTS.orassist),{dest:'f5',spot:'or-13'});
 assert.deepEqual(operatingTarget(EVENTS.orassist,'or'),{dest:'f5',spot:'or-13'});
 assert.deepEqual(operatingTarget(EVENTS.tonsil),{dest:'f7',spot:'patient'});
-assert.deepEqual(operatingTarget(EVENTS.tonsil,'or'),{dest:'f5',spot:'or-16'});
+assert.deepEqual(operatingTarget(EVENTS.tonsil,'or'),{dest:'f7',spot:'patient'});
 assert.equal(EVENTS.orassist.orRoom,13);assert(EVENTS.orassist.call.includes('13 號'));
 for(let seed=0;seed<50;seed++){
   const run=createRun({seed:'OR-'+seed});

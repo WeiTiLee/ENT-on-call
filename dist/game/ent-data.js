@@ -1,3 +1,4 @@
+import {OSA_EVENT} from './osa-bleeding.js';
 import {createFoodState} from './meal-breaks.js';
 import {createSelfCare} from './vitals.js';
 import {createSideActivities} from './side-activities.js';
@@ -42,11 +43,7 @@ export const CASES={
     phone:[{text:'補問出血狀況與病史，確認適合後安排到 2G',dest:'g2',reply:'資訊已補齊，病人安排到初診間。'},{text:'到 1F 急診看病人',dest:'f1',reply:'好，急診會診區見。'},{text:'衛生紙用得不多，應該不用看',why:'先依出血與病人狀況判斷，不能只用衛生紙的量下結論。'}],
     intro:'病人：「我剛剛有先捏鼻子。」\n小禾：「好，我們再確認一下你捏的位置和方式。」',
     steps:[{ask:'現在怎麼進行評估？',options:[{text:'確認出血狀況、相關病史與先前處理，再安排合適處置',good:true,reply:'資訊與檢查結果已整理，團隊進行合適處理。'},{text:'先研究這一包衛生紙是哪個品牌',reply:'備品的品牌可以之後聊，先看病人的狀況。'}]},{ask:'處理告一段落，接下來？',options:[{text:'再次確認狀況，交代後續並完成紀錄',good:true,reply:'桌上還有一整包備用衛生紙。\n你心想：這位病人的備品，比我的值班包還齊。'},{text:'只跟病人說「下次再來」',reply:'後續注意事項與處理結果，還是要交代完整。'}]}]},
-  tonsil:{title:'扁桃腺術後出血',source:'7F 病房 · 可晴護理師',patient:'術後病童 · 吐出血，仍反覆吞嚥',tag:'需要及時到場',urgent:true,
-    call:'醫師，扁桃腺術後的小朋友剛剛吐出血，現在還一直吞口水，請你快過來。',
-    phone:[{text:'前往 7F 評估，同步聯繫學長與需要的團隊',dest:'f7',support:true,reply:'學長已聯繫，請到 7F23。'},{text:'吐出來的量不多，先延到晚一點',why:'這個情境仍有出血徵象，需要及時到場評估。'},{text:'請病人自己到 2G 等',why:'病人目前在病房有出血狀況，先到現場評估。'}],
-    intro:'可晴：「病人在這裡，學長也正在過來。」\n這一次，大家的聲音都很簡短。',
-    steps:[{ask:'到病房後先如何與團隊配合？',options:[{text:'回報現況、共同評估並確認分工',good:true,support:true,reply:'學長與團隊完成現場安排，這位病人在本劇情中需要進一步刀房處理。'},{text:'沒有回報就自己做完所有事',reply:'把資訊和支援接起來，是這件事的重要部分。'}]},{ask:'團隊已安排刀房，接下來的目的地？',options:[{text:'搭 F 棟電梯到 5 樓，參與指定操作',good:true,action:'or',reply:'前往 F 棟 5 樓。這一段，團隊已在刀房準備。'},{text:'先跨到 G 棟五樓再走過去',reply:'F／G 五樓不相通，刀房要從 F 棟電梯到達。'}]}]},
+  tonsil:OSA_EVENT,
   cockroach:{title:'耳朵裡的不速之客',source:'1F 急診 · 柏宇醫師',patient:'李先生 · 耳朵異物，初評狀況穩定',tag:'深夜會診',urgent:false,
     call:'耳朵異物會診，病人說是蟑螂。目前狀況穩定，確認能上樓的話，我們安排到初診間。',
     phone:[{text:'補齊資訊，安排病人到 2G 初診間',dest:'g2',reply:'小禾會協助接待。請到 2G。'},{text:'我下 1F 急診評估',dest:'f1',reply:'好，我們在急診等你。'},{text:'只說等白天，沒有釐清狀況',why:'先補齊目前狀況與經過，再決定處理安排。'}],
@@ -58,6 +55,6 @@ export const CASES={
     intro:'急診、麻醉和學長都在現場。\n沛庭醫師：「我們先把分工對清楚。」',
     steps:[{ask:'到場後先與團隊確認什麼？',options:[{text:'確認目前狀況、角色分工、器材與備援安排',good:true,support:true,reply:'分工確認完成，大家開始配合現場處理。'},{text:'大家各做各的，不交換資訊',reply:'先對齊目前狀況與分工，讓團隊一起工作。'}]},{ask:'團隊完成處置，後續如何交代？',options:[{text:'確認後續照護與負責團隊，完整記錄並交班',good:true,reply:'學長：「剛剛有把人找齊，做得好。後續我們一起交代清楚。」'},{text:'事情結束就離開，後續讓大家自己猜',reply:'把後續的照護與交接接好，這件事才算收尾。'}]}]}
 };
-export function createState(){return{started:false,ending:false,epilogue:null,orAnesthesiaSaid:false,name:'小值',character:'male',temper:18,location:'f7',orRoom:null,phase:0,clock:440,energy:88,hunger:70,care:createSelfCare(),mode:'walk',accepted:false,seniorCalled:false,activeDest:null,caseStep:0,caseMode:'patient',completed:[],eventErrors:{},run:null,nightWaitElapsed:0,wardCalls:{},morning:null,opening:null,pacing:null,log:[],food:createFoodState(),side:createSideActivities(),awaitingDesk:false,hearing:null,tubes:{},practiceTube:null,clinicNurseAway:true,clinicCallDeferred:false,wardNG:null,fish:null,nose:null,hearingConsult:null,npx:null,npxPracticeCount:0,orLists:{},localOR:{},activeORProcedure:null,localPracticeCount:0,booking:null,bookingPracticeCount:0,contact:null,contactPracticeCount:0,stats:{trips:0,elevatorRides:0,walked:0,woken:0,support:0,operations:0,retries:0,meals:0,restSeconds:0,stability:[]},sound:false,explore:false};}
+export function createState(){return{started:false,ending:false,epilogue:null,orAnesthesiaSaid:false,name:'小值',character:'male',temper:18,location:'f7',orRoom:null,phase:0,clock:440,energy:88,hunger:70,care:createSelfCare(),mode:'walk',accepted:false,seniorCalled:false,activeDest:null,caseStep:0,caseMode:'patient',completed:[],eventErrors:{},run:null,nightWaitElapsed:0,wardCalls:{},morning:null,opening:null,pacing:null,log:[],food:createFoodState(),side:createSideActivities(),awaitingDesk:false,hearing:null,tubes:{},practiceTube:null,clinicNurseAway:true,clinicCallDeferred:false,wardNG:null,fish:null,nose:null,osaBleed:null,hearingConsult:null,npx:null,npxPracticeCount:0,orLists:{},localOR:{},activeORProcedure:null,localPracticeCount:0,booking:null,bookingPracticeCount:0,contact:null,contactPracticeCount:0,stats:{trips:0,elevatorRides:0,walked:0,woken:0,support:0,operations:0,retries:0,meals:0,restSeconds:0,stability:[]},sound:false,explore:false};}
 export function fmt(min){const m=Math.floor(min)%1440;return`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;}
 export function nextHop(graph,from,to){if(from===to)return null;const queue=[[from]];const seen=new Set([from]);while(queue.length){const p=queue.shift();for(const e of graph.edges){const n=e.from===p.at(-1)?e.to:e.bidirectional&&e.to===p.at(-1)?e.from:null;if(!n||seen.has(n))continue;const path=[...p,n];if(n===to){const first=graph.edges.find(edge=>edge.from===path[0]&&edge.to===path[1]||edge.bidirectional&&edge.to===path[0]&&edge.from===path[1]);return{next:path[1],mode:first.mode,path};}seen.add(n);queue.push(path);}}return null;}
