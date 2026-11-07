@@ -8,3 +8,5 @@ assert.equal(people.size,3);assert(!people.has(undefined));assert.equal(EVENTS.p
 console.log('Birthday passed: seeded three honorees, attend/decline routes, noon scheduling, 2G audiology destination and clinic map orientation.');
 
 const r=CLINIC_ROUTE;assert(r.outside.x<r.door.x&&r.inside.x>r.door.x);assert(r.turn.z<r.outside.z);assert(r.elevator.x<r.door.x);assert(r.audioDoor.x<r.turn.x);
+
+assert(Math.abs(r.door.z-r.elevator.z)>12);assert(r.snackDoor.door.x>1.5);assert(r.snackDoor.inside.z<r.snackDoor.door.z&&r.snackDoor.outside.z>r.snackDoor.door.z);assert(clinicPlanSVG().includes('門1')&&clinicPlanSVG().includes('門2'));
