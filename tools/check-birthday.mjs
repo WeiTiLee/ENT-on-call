@@ -7,6 +7,6 @@ for(let i=0;i<300;i++){const seed='BIRTHDAY-'+i,c=birthdayEvent(seed);assert.dee
 assert.equal(people.size,3);assert(!people.has(undefined));assert.equal(EVENTS.popcorn.title,'中午聽力室慶生');assert(!EVENTS.popcorn.brief.includes('爆米花'));assert(clinicPlanSVG().includes('左上聽力室、右上走廊、右下初診間'));assert(CLINIC_OUTLINE.some(([x,z])=>x<-30&&z<-30));
 console.log('Birthday passed: seeded three honorees, attend/decline routes, noon scheduling, 2G audiology destination and clinic map orientation.');
 
-const r=CLINIC_ROUTE;assert(r.outside.x<r.door.x&&r.inside.x>r.door.x);assert(r.turn.z<r.outside.z);assert(r.elevator.x<r.door.x);assert(r.audioDoor.x<r.turn.x);
+const r=CLINIC_ROUTE;assert(r.outside.x<r.door.x&&r.inside.x>r.door.x);assert(r.turn.z<r.outside.z);assert(r.elevator.x>r.snackDoor.door.x&&r.elevator.z>r.snackDoor.door.z);assert(r.audioDoor.x<r.turn.x);
 
 assert(Math.abs(r.door.z-r.elevator.z)>12);assert(r.snackDoor.door.x>1.5);assert(r.snackDoor.inside.z<r.snackDoor.door.z&&r.snackDoor.outside.z>r.snackDoor.door.z);assert(clinicPlanSVG().includes('門1')&&clinicPlanSVG().includes('門2'));
