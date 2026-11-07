@@ -34,7 +34,7 @@ export const STUDIO_DINING_STATES=[['not-ordered','尚未訂飲料'],['waiting',
 const allCases={...EVENTS,...MORNING_CASES};
 export function createStudioEvent(id,seed,{character='male',name='小值'}={}){
   const c=allCases[id];if(!c)throw new Error('找不到這個試玩事件');
-  const morning=id==='rounds'||id==='nasal-cleaning',clock=morning?450:id==='lunchOrder'?990:id==='drink'||LOCAL_OR_IDS.includes(id)||id==='orSenior'?810:STUDIO_GROUPS[1].ids.includes(id)?1140:555;
+  const morning=id==='rounds'||id==='nasal-cleaning',clock=morning?450:id==='popcorn'?720:id==='lunchOrder'?990:id==='drink'||LOCAL_OR_IDS.includes(id)||id==='orSenior'?810:STUDIO_GROUPS[1].ids.includes(id)?1140:555;
   const s=createState();s.name=name;s.character=character;s.started=true;s.energy=100;s.hunger=100;s.temper=0;s.clock=clock;s.location=c.dest;
   const p={id,case:morning?undefined:id,kind:morning?'morning-work':id==='drink'?'studio-drink':'case',clock,title:c.title,description:'單項試玩；可按「直達下一步」跳到目前的互動位置。',dest:c.dest,spot:c.spot||'nurse',destination:'製作檢視 · '+c.title};
   const phases=id==='rounds'?[{...PHASES.find(p=>p.id==='morning')},p]:[p];

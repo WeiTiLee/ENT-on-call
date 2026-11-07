@@ -26,14 +26,23 @@ const FLOOR_BULLETINS={
   ],
   '7':[
     {tag:'值班室提醒',title:'枕頭尚未完成本日試用',text:'剛躺下就接電話不算睡過，請保留再次試用的機會。'},
-    {tag:'討論室補給',title:'餅乾可以拿，會議紀錄不用吃',text:'補一點飽足再繼續。包裝請丟好，留下餅乾屑不會增加研究產出。'},
+    {tag:'病房電話實錄',title:'「一個小order」通常不會只有一個',text:'先漱口，再點滴，最後順便印張單。小，是指電話那一端的工作量。'},
     {tag:'病房走廊觀察',title:'你已經第三次經過護理站了',text:'第一次接call，第二次補order，第三次終於想起來領便當。辛苦了。'}
   ]
 };
+const XU_NOTICE={tag:'榮譽榜',title:'恭喜徐教授獲得研究成果應用競賽第一名',text:'耳鼻喉科全體同仁敬賀！'};
+const EXTRA_NOTICES=[
+ {tag:'院內氣象台',title:'今日電話降雨機率：100%',text:'局部病房有短暫密集來電，值班室可能出現雷聲。出門請帶手機與耐心。'},
+ {tag:'睡眠研究速報',title:'手機可以偵測醫師躺下',text:'本遊戲虛構研究：背部接觸床墊後，分機響起的速度顯著上升。枕頭尚未通過盲測。'},
+ {tag:'院內系統溫馨提醒',title:'越忙，越要改密碼',text:'新密碼不得與前三次相同。至於你上次睡飽是哪一天，系統不要求記得。'},
+ {tag:'值班飲食學',title:'便當不會消失，只會變冷',text:'主治的刀可以準時開始，你的飯不保證。建議領到後，先吃一口再說。'},
+ {tag:'器材協尋',title:'這支筆不是迷路，是跨科學習',text:'目前研修地點：7F護理站。原單位2G表示：課程結束請儘速返鄉。'},
+ {tag:'不正式用語辭典',title:'「順便」：讓一件事變成五件事的咒語',text:'請搭配「你現在有空嗎」使用，效果加倍。聽到後先深呼吸。'}
+];
 function noticeShuffle(items,seed){let h=2166136261;for(const c of String(seed))h=Math.imul(h^c.codePointAt(0),16777619);const out=[...items];for(let i=out.length-1;i>0;i--){h^=h<<13;h^=h>>>17;h^=h<<5;const j=(h>>>0)%(i+1);[out[i],out[j]]=[out[j],out[i]];}return out;}
 // A run and floor always show the same papers, including on a return visit.
 export function bulletinsFor(location,seed='ENT'){
  const floor=String(location).match(/\d+/)?.[0]||'7';
  const local=FLOOR_BULLETINS[floor]||FLOOR_BULLETINS['7'];
- return[BULLETINS[0],...noticeShuffle(local,seed+'|local|'+floor).slice(0,2),...noticeShuffle(BULLETINS.slice(1),seed+'|common|'+floor).slice(0,1)];
+ return[BULLETINS[0],XU_NOTICE,...noticeShuffle(local,seed+'|local|'+floor).slice(0,2),...noticeShuffle([...BULLETINS.slice(1),...EXTRA_NOTICES],seed+'|common|'+floor).slice(0,2)];
 }

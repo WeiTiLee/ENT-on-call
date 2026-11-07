@@ -20,7 +20,7 @@ export const PHASES=[
   {id:'blueberry',kind:'case',clock:840,title:'會診標題：藍莓',description:'這次需要去急診現場。先聽完整資訊，再決定下一步。',case:'blueberry',dest:'f1',spot:'patient',destination:'1F 急診 · 會診區'},
   {id:'nose',kind:'case',clock:960,title:'鼻血與衛生紙',description:'一整包衛生紙，不等於一份完整病史。先補齊資訊。',case:'nose',dest:'g2',spot:'patient',destination:'2G 初診間'},
   {id:'dinner',kind:'break',clock:1080,title:'晚餐便當到了，先吃一口',description:'18:00 後便當送到 7F 護理站。領取自己訂的便當；若先忙，餐點仍留在待辦。',dest:'f7',spot:'nurse',destination:'7F 病房 · 護理站'},
-  {id:'popcorn',kind:'social',clock:1110,title:'爆米花口味投票',description:'電話響了。這通的三個選項，可能還有附件。',dest:'g2',spot:'desk',destination:'電話回覆即可'},
+  {id:'popcorn',kind:'social',clock:1110,title:'中午聽力室慶生',description:'中午聽力室邀請慶生，可以參加或婉拒。',dest:'g2',spot:'desk',destination:'電話回覆即可'},
   {id:'tonsil',kind:'case',clock:1200,title:'術後病人出血了',description:'病房有需要及時評估的狀況。到現場，並找齊團隊。',case:'tonsil',dest:'f7',spot:'patient',destination:'7F 病房 · 7F23'},
   {id:'sleep',kind:'sleep',clock:1445,title:'終於可以躺一下',description:'午夜了，回 7F 病房後方值班室。電話會記得找到你。',dest:'f7',spot:'sleep',destination:'7F 病房後方 · 值班室'},
   {id:'cockroach',kind:'case',clock:1510,title:'耳朵裡的不速之客',description:'病人在初診間等候。從 F 棟下二樓，再跨到 2G。',case:'cockroach',dest:'g2',spot:'patient',destination:'2G 初診間'},

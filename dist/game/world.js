@@ -1,3 +1,4 @@
+import {CLINIC_OUTLINE} from './birthday.js';
 import {perimeterApproaches,spotDistance,sortedApproaches} from './interaction-points.js';
 import * as THREE from '../vendor/three.module.js';
 import {operatingTeam} from './or-team.js';
@@ -67,7 +68,7 @@ export function createWorld(canvas){
   function monitor(x,z,rotation=0){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=rotation;root.add(g);box(0,1.45,0,.75,.1,.5,0x4c5c52,false,g);box(0,1.75,0,.08,.55,.08,0x4c5c52,false,g);box(0,2.05,0,1.35,.91,.12,0x3c4e47,false,g);box(0,2.05,.07,1.18,.73,.01,0xc4dcd0,false,g);box(-.29,2.21,.08,.5,.08,.01,0x749d90,false,g);for(let i=0;i<3;i++)box(0,2.02-i*.13,.08,1,.025,.01,0xa7c5b5,false,g);box(0,1.47,.5,.96,.055,.32,0x697e71,false,g);return g;}
   function bed(x,z,patient=false){box(x,.64,z,2.8,.5,5.1,0xc7cdbd,true);box(x,1.01,z,2.65,.3,4.85,0xf2f2e5);box(x,1.2,z-1.6,2,.24,.8,0xffffff);box(x,1.2,z+.5,2.64,.17,2.8,0x91bdaf);for(const a of [-1.6,1.6])line([x+a,.6,z-1.7],[x+a,1.45,z-1.7],.045,0x9eafa2);box(x,1.05,z+2.5,2.8,1.15,.13,0xc7d1c6);if(patient){sphere(x,1.52,z-1.5,.32,0xd6ae89);box(x,1.34,z-.3,.9,.3,1.6,0xb5d2c2);} }
   function curtain(x,z,width=4,side=false){const g=new THREE.Group();root.add(g);const count=Math.round(width/.2);for(let i=0;i<count;i++){const a=(i/count-.5)*width;box(side?x:x+a,1.6,side?z+a:z,side?.13:.23,2.7,side?.23:.13,i%2?0x8dc7c4:0x7bb8b8);}line([side?x:x-width/2,3.1,side?z-width/2:z],[side?x:x+width/2,3.1,side?z+width/2:z],.035,0xb2bcb0);}
-  function roomBase(w,d,color=C.floor){bounds={x:w/2,z:d/2};box(0,-.33,0,w+.4,.65,d+.4,0xbdc8b1);box(0,.015,0,w,.08,d,0xf5f3e8);box(0,.067,0,w-.2,.025,d-.2,flooring);box(0,.65,-d/2,w,1.3,.25,C.wall,true);box(-w/2,.65,0,.25,1.3,d,C.wall,true);box(w/2,.65,0,.25,1.3,d,C.wall,true);box(0,.16,d/2,w,.24,.25,C.trim);}
+  function roomBase(w,d,color=C.floor){bounds={x:w/2,z:d/2};box(0,-.33,0,w+.4,.65,d+.4,0xbdc8b1);box(0,.015,0,w,.08,d,0xf5f3e8);box(0,.067,0,w-.2,.025,d-.2,flooring);box(0,.65,-d/2,w,1.3,.25,C.wall,true);box(-w/2,.65,0,.25,1.3,d,C.wall,true);if(loc!=='g2')box(w/2,.65,0,.25,1.3,d,C.wall,true);else{box(w/2,.65,-5.25,.25,1.3,18.5,C.wall,true);box(w/2,.65,12.25,.25,1.3,4.5,C.wall,true);}box(0,.16,d/2,w,.24,.25,C.trim);}
   function elevator(x,z){box(x,1.25,z,3.6,2.5,.6,0xb9c3b7,true);box(x,1.25,z+.33,2.7,2.25,.05,0x8c9b93);box(x,1.25,z+.37,.035,2.18,.02,0x65776d);sign(LOCATIONS[loc].code,x,2.75,z+.35,1.6,'#263e52','#d5eb9a');box(x+2.15,1.1,z,.22,.44,.2,0x637b65);spots.push({id:'elevator',x,z:z+2.2,approaches:perimeterApproaches(x,z,3.6,.6,1.2),label:'搭電梯',icon:'↕'});}
   function bridge(x,z){sign(loc.startsWith('f')?'往 G 棟 →':'← 往 F 棟',x,2.15,z,4,'#f2f3e7','#58744a');box(x,.025,z+1.1,4,.018,1.4,0xb7c99e);spots.push({id:'bridge',x,z:z+1,label:loc.startsWith('f')?'跨到 G 棟':'跨到 F 棟',icon:'↔'});}
 
@@ -118,7 +119,15 @@ export function createWorld(canvas){
 
     const crossing=wardPoint(WARD_PLAN.crossing.x,WARD_PLAN.crossing.y);bridge(crossing.x,crossing.z);return{x:-5.8,z:33.6};
   }
-  function clinic(){roomBase(34,29);bounds={x:16.4,z:13.9};box(0,1.8,-14.3,33.7,3.6,.23,C.wall,true);
+  function audiologyArea(){
+    for(const [x,z,w,d] of [[-28,-24,22,18],[3.5,-24,41,18],[20,-2,8,34]]){box(x,-.33,z,w,.65,d,0xbdc8b1);box(x,.067,z,w,.08,d,flooring);}
+    box(-28,.7,-33,22,1.4,.25,C.wall,true);box(-39,.7,-24,.25,1.4,18,C.wall,true);box(-28,.7,-15,22,1.4,.25,C.wall,true);for(const z of [-30,-18])box(-17,.7,z,.25,1.4,6,C.wall,true);box(3.5,.7,-33,41,1.4,.25,C.wall,true);box(24,.7,-9,.25,1.4,48,C.wall,true);
+    sign('聽力室 / AUDIOLOGY',-28,3.3,-32.8,8);sign('聽力室 ←',2,.14,-24,5,'#b7c7bd','#36515c',true);sign('初診間 ↓',20,.14,-5,4,'#b7c7bd','#36515c',true);sign('初診間',16.8,2.4,7,3);
+    box(-32,1.3,-28,7,2.6,5,0x718b91,true);box(-32,1.3,-25.45,3,1.5,.06,0xacc8cd);sign('聽力檢查室',-32,2.9,-25.3,4);box(-23,.7,-28,5,1.4,2,wood,true);monitor(-23,-28);chair(-23,-26);
+    box(-28,.75,-19,7,1.5,2.5,wood,true);cyl(-28,1.66,-19,.9,.25,0xf1d6cb);cyl(-28,1.83,-19,.85,.12,0xf3ebe0);for(const dx of [-.4,0,.4]){cyl(-28+dx,2.05,-19,.035,.35,0xd2a365);sphere(-28+dx,2.27,-19,.07,0xecc56a);}for(const x of [-30,-26]){cyl(x,1.55,-19,.35,.04,0xf5ede0);box(x,1.61,-19,.35,.12,.3,0xe2ac90);}
+    root.add(person(-24,-20,0x74a8a0));root.add(person(-32,-19,0xd9ddd0));plant(21,-29);spots.push({id:'audiology',x:-28,z:-16.8,label:'聽力室 · 慶生桌',height:3.3});
+  }
+  function clinic(){roomBase(34,29);bounds={x:40,z:34};walkArea=CLINIC_OUTLINE.map(([x,z])=>({x,z}));audiologyArea();box(0,1.8,-14.3,33.7,3.6,.23,C.wall,true);
     for(let i=0;i<8;i++){const x=-13.7+i*3.8;box(x,.65,-12.9,3.7,1.3,2.05,wood,true);box(x,1.36,-12.8,3.8,.12,2.2,0xc5aa82);box(x,2.9,-13.4,3.7,1.08,1.08,wood);box(x+.8,2.8,-12.84,.07,.3,.045,0x566674);}
     cyl(3.1,1.43,-12.55,.73,.06,0xe8e5d9);cyl(3.1,1.46,-12.55,.53,.025,0x9baab1);line([3.7,1.4,-12.9],[3.7,1.95,-12.9],.07,C.steel);line([3.7,1.95,-12.9],[3.3,1.95,-12.6],.07,C.steel);for(const x of [5,5.8])box(x,2.05,-14,.4,.72,.2,0xe6e2d8);
     for(let i=0;i<6;i++)cyl(-8+i*.42,1.6,-12.6,.14,.36,i%3?0xd3dce0:0x537d9b);box(10,1.7,-12.7,.9,.65,.8,0xb87858);

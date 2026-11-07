@@ -7,7 +7,7 @@ import {LOCATIONS,nextHop} from '../dist/game/ent-data.js';
 import {readFile} from 'node:fs/promises';
 const graph=JSON.parse(await readFile(new URL('../dist/game/navigation.json',import.meta.url),'utf8'));
 const ids=Object.keys(EVENTS),categorySizes={urgent:4,routine:20,odd:5,daily:6};
-const spots={f7:['patient','food','nurse','computer'],f5:['operation'],g2:['patient','patient2','desk','clinic-phone','printer','tissue'],f1:['patient']};
+const spots={f7:['patient','food','nurse','computer'],f5:['operation'],g2:['audiology','patient','patient2','desk','clinic-phone','printer','tissue'],f1:['patient']};
 assert.equal(ids.length,35);
 for(const [category,size] of Object.entries(categorySizes))assert.equal(ids.filter(id=>EVENTS[id].category===category).length,size);
 for(const [id,c] of Object.entries(EVENTS)){

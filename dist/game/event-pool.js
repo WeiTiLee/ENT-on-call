@@ -1,3 +1,4 @@
+import {BIRTHDAY_EVENT} from './birthday.js';
 import {OSA_EVENT} from './osa-bleeding.js';
 import {NOSE_EVENT} from './nose-case.js';
 import {FISH_EVENT} from './fish-case.js';
@@ -135,8 +136,7 @@ export const EVENTS={
     phone:[{text:'無糖去冰，謝謝。',dest:'f5',reply:'流動：「無糖去冰，出房後去右邊餐廳拿。」',effect:{drink:true,drinkName:'無糖去冰茶'}},{text:'微糖少冰，今天需要一點甜。',dest:'f5',reply:'流動：「微糖少冰，幫你記了。出房到右邊餐廳拿。」',effect:{drink:true,drinkName:'微糖少冰茶'}},{text:'幫我留瓶水就好，謝謝。',dest:'f5',reply:'流動：「好，出房到右邊餐廳拿水。」',effect:{drink:true,drinkName:'瓶裝水'}},{text:'今天先不訂，謝謝。',dest:'f5',reply:'流動：「好，那我先送單了。」'}]}),trigger:'or-busy-call'},
   takoyaki:daily({title:'章魚燒到了，現在還是熱的',dest:'f7',spot:'nurse',source:'7F 病房 · 可晴護理師',phoneOnly:true,call:'章魚燒到了，要幫你留一盒嗎？溫度我只能先幫你顧到這裡。',brief:'留一盒章魚燒，回護理站才有吃到的機會。',
     phone:[{text:'幫我留一盒，我找空檔回去。',dest:'f7',reply:'可晴：「有幫你留，溫度沒有辦法一起留。」',effect:{meal:true}},{text:'這次先不用留，謝謝。',dest:'f7',reply:'可晴：「好，先忙完手邊的事。」'}]}),
-  popcorn:daily({title:'爆米花口味投票',dest:'f7',source:'7F 病房 · 可晴護理師',phoneOnly:true,call:'醫師，團購爆米花！芥末、焦糖、烏龍茶、巧克力，這次要哪一種？',brief:'芥末、焦糖、烏龍茶、巧克力；口味選擇比今日空檔多。',
-    phone:[...['芥末','焦糖','烏龍茶','巧克力'].map(flavor=>({text:flavor+'，謝謝。',dest:'f7',reply:'可晴：「'+flavor+'，幫你登記好了，到貨再通知。」',effect:{popcorn:true}})),{text:'這次先不跟，先忙手邊的事。',dest:'f7',reply:'可晴：「好，有需要下次再跟。」'}]}),
+  popcorn:BIRTHDAY_EVENT,
   orassist:daily({title:'13 號刀房：NPX biopsy',dest:'f5',spot:'operation',orRoom:13,source:'5F · 13房流動',call:'這裡是 13 房流動，你的 NPX biopsy 準備好了，請到 13 號刀房。需要協助可以到 16 房找學長。記得搭 F 棟電梯，五樓不能跨棟。',
     intro:'流動：「這台是 NPX biopsy，資料在這裡。」\n刷手：「要器械再跟我說。」',brief:'13房 NPX biopsy：鋪單、packing、找病灶、向刷手拿 biopsy cup，完成取樣、止血及檢體交接。',
     phone:[{text:'收到，確認是 13 房的 NPX biopsy，我現在過去。',dest:'f5',reply:'流動：「對，13 房，我們準備好了。」'},{text:'先把手邊病人安頓好，再上 13 房。',dest:'f5',reply:'流動：「好，請到 13 房，這台是 NPX biopsy。」'}],
