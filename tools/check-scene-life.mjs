@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import {DUTY_ROOMS,canUseDutyRoom,BULLETINS} from '../dist/game/scene-life.js';
+import {DUTY_ROOMS,canUseDutyRoom,BULLETINS,bulletinsFor} from '../dist/game/scene-life.js';
 import {WARD_PLAN,wardRect,floorplanSVG} from '../dist/game/ward-plan.js';
 import {layoutMarkers,overlaps} from '../dist/game/marker-layout.js';
 for(const character of ['male','female']){const entry=Object.entries(DUTY_ROOMS).find(([,r])=>r.character===character);const r=wardRect(WARD_PLAN.core.find(r=>r.id===entry[0]));assert(character==='male'?r.x<0:r.x>0);assert(canUseDutyRoom({allowedCharacter:character},character));assert(!canUseDutyRoom({allowedCharacter:character},character==='male'?'female':'male'));assert(floorplanSVG().replace(/<[^>]+>/g,'').includes(entry[1].name));}
 assert(canUseDutyRoom({},'female'));assert(BULLETINS.length>=4);
+const variations=new Set();for(let i=0;i<300;i++){const seed='BOARD-'+i;const boards=['g1','f2','g7'].map(loc=>{const papers=bulletinsFor(loc,seed);assert.equal(papers.length,4);assert.equal(papers[0],BULLETINS[0]);assert.equal(new Set(papers.map(p=>p.title)).size,4);assert.deepEqual(papers,bulletinsFor(loc,seed));return papers;});assert.notDeepEqual(boards[0],boards[1]);assert.notDeepEqual(boards[1],boards[2]);variations.add(JSON.stringify(boards));}assert(variations.size>30);
 for(const [width,height] of [[1000,650],[617,269],[320,500]]){
  const blocked=[{left:0,right:180,top:0,bottom:60}],candidates=Array.from({length:32},(_,i)=>({key:'spot:'+i,x:Math.min(width-50,60+i%5*48),y:80+Math.floor(i/5)*29,width:130,height:30,marker:true,priority:i===0?100:50,distance:i,goal:i===0}));
  const result=layoutMarkers(candidates,{width,height,blocked,maxMarkers:4});assert(result.has('spot:0'));assert(result.size<=4);

@@ -12,3 +12,28 @@ export const BULLETINS=[
   {tag:'科內非正式研究',title:'近期研究發現：ENT 住院醫師脾氣越來越差',text:'本遊戲虛構研究：電話越密、便當越冷，脾氣越高。建議補飯、補眠，並減少「順便再看一個」。'},
   {tag:'人才招募',title:'內外科住院醫師短缺，歡迎投單',text:'歡迎有志之士加入內科、外科住院醫師行列。條件：接得起電話，也記得吃飯。詳情請洽各科招募窗口。'}
 ];
+
+const FLOOR_BULLETINS={
+  '1':[
+    {tag:'急診旁的溫馨提醒',title:'「看完這個就好」是時間單位嗎？',text:'本遊戲非正式統計：這句話之後，通常還會再來一個。'},
+    {tag:'夜間走廊觀察',title:'電梯到了，電話也到了',text:'剛跨進電梯，手機就響。請先確認目的地，避免搭出一趟院內觀光。'},
+    {tag:'失物招領',title:'尋找完整吃完的晚餐',text:'最後目擊地點：值班醫師面前。失蹤時間：第一通急診電話響起之後。'}
+  ],
+  '2':[
+    {tag:'初診間日常',title:'印表機目前情緒穩定',text:'這張公告印出來的時候是。現在請以現場狀況為準。'},
+    {tag:'補給提醒',title:'最後一張衛生紙不是結案',text:'抽完請補下一包，讓下一位洗完手的人不用原地思考人生。'},
+    {tag:'診間失物協尋',title:'筆離開2G後，是否仍記得回家的路？',text:'本遊戲虛構追蹤研究：初診間的筆經常在7F重新被發現。'}
+  ],
+  '7':[
+    {tag:'值班室提醒',title:'枕頭尚未完成本日試用',text:'剛躺下就接電話不算睡過，請保留再次試用的機會。'},
+    {tag:'討論室補給',title:'餅乾可以拿，會議紀錄不用吃',text:'補一點飽足再繼續。包裝請丟好，留下餅乾屑不會增加研究產出。'},
+    {tag:'病房走廊觀察',title:'你已經第三次經過護理站了',text:'第一次接call，第二次補order，第三次終於想起來領便當。辛苦了。'}
+  ]
+};
+function noticeShuffle(items,seed){let h=2166136261;for(const c of String(seed))h=Math.imul(h^c.codePointAt(0),16777619);const out=[...items];for(let i=out.length-1;i>0;i--){h^=h<<13;h^=h>>>17;h^=h<<5;const j=(h>>>0)%(i+1);[out[i],out[j]]=[out[j],out[i]];}return out;}
+// A run and floor always show the same papers, including on a return visit.
+export function bulletinsFor(location,seed='ENT'){
+ const floor=String(location).match(/\d+/)?.[0]||'7';
+ const local=FLOOR_BULLETINS[floor]||FLOOR_BULLETINS['7'];
+ return[BULLETINS[0],...noticeShuffle(local,seed+'|local|'+floor).slice(0,2),...noticeShuffle(BULLETINS.slice(1),seed+'|common|'+floor).slice(0,1)];
+}
