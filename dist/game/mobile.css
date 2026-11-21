@@ -32,3 +32,16 @@
 @media (orientation:landscape) and (max-height:500px) and (max-width:1100px){
  .pending-section>.section-label{flex-wrap:nowrap;gap:4px;min-height:26px}.pending-section h3{font-size:11px;letter-spacing:0;white-space:nowrap}.pending-section #pendingCount{font-size:9px;padding:2px 4px;white-space:nowrap}.task-scroll-controls{gap:2px;flex-shrink:0}.task-scroll-controls button{font-size:10px;padding:3px;min-height:26px}.mission-card{padding:5px 6px}.mission-kicker{display:none}.mission-card h2{font-size:12px;line-height:1.2;margin:2px 0}.mission-destination{padding-top:2px;font-size:9px}.guide-button{min-height:26px;margin-top:3px;padding:4px 6px}.pending-list{min-height:45px}
 }
+
+/* Mission instructions must wrap independently of the compact work queue. */
+.mission-card h2,.mission-card p{display:block;-webkit-line-clamp:unset;-webkit-box-orient:initial;overflow:visible;white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
+.mission-card h2{font-size:19px;line-height:1.45}
+.mission-card p{font-size:14px;line-height:1.65}
+.mission-card .day-pacing-hint{font-size:13px!important;line-height:1.6!important;margin:8px 0!important}
+.mission-destination{overflow-wrap:anywhere}
+@media(max-height:600px){
+ .mission-card{max-height:60%;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;touch-action:pan-y;flex-shrink:0}
+ .mission-card h2{font-size:14px;line-height:1.4}
+ .mission-card p{font-size:12px;line-height:1.5;margin:5px 0}
+ .mission-card .day-pacing-hint{font-size:12px!important;line-height:1.5!important}
+}
