@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import {createState} from '../dist/game/ent-data.js';
+import {createRun} from '../dist/game/event-deck.js';
+import {LOCAL_OR_IDS} from '../dist/game/event-pool.js';
+import {createNightWardCall,wardCallAction} from '../dist/game/night-ward-calls.js';
+import {releaseDueCalls,selectWork} from '../dist/game/call-scheduler.js';
+import {beginPostoperative,postoperative,postoperativeAction,continueOR,printFollowup,paperTarget,paperAction,paperReminders,cookiesLeft,takeCookie} from '../dist/game/shift-workflow.js';
+for(let i=0;i<100;i++){
+ const s=createState();s.run=createRun({seed:'FOLLOW-'+i});s.started=true;s.mode='walk';s.clock=850;s.location='f5';
+ const locals=s.run.phases.filter(p=>LOCAL_OR_IDS.includes(p.case));
+ for(const p of locals){s.phase=s.run.phases.indexOf(p);s.accepted=true;s.npx={patient:{name:'測試病人'}};s.localOR={ear:{patient:{name:'耳內注射病人'}},oral:{patient:{name:'口腔切片病人'}}};const t=beginPostoperative(s,'操作完成');assert(t);assert.equal(postoperative(s),t);assert(!s.completed.includes(p.id));assert(!t.done);const original=s.phase;selectWork(s,0);assert.equal(postoperative(s),null);selectWork(s,original);assert.equal(postoperative(s),t);assert(postoperativeAction(t,'order'));assert.equal(t.done,p.case==='orEar');if(t.needsSpecimen)assert(postoperativeAction(t,'specimen'));assert(t.done);assert(!postoperativeAction(t,'order'));assert.equal(beginPostoperative(s,'再次完成'),null);s.completed.push(p.id);const next=continueOR(s,p.case);assert(next);assert(next.clock<=s.clock);const due=releaseDueCalls(s);assert(due.some(x=>x.id===next.id)||s.dispatch.released.includes(next.id));}
+ assert(s.run.phases.some(p=>p.case==='orSenior'));assert.equal(s.run.ids.filter(x=>x==='orSenior').length,1);const count=s.run.total;continueOR(s,locals.at(-1).case);assert.equal(s.run.total,count);assert.equal(s.run.total,s.run.ids.length);assert.equal(s.run.maxScore,count*10);
+}
+for(const requestId of ['print-ct','print-discharge'])for(const location of ['g2','f7','f5']){
+ const t=createNightWardCall('wardOrder','PAPER',{instanceId:'wardOrder-2',requestId});const r=wardCallAction(t,t.steps[0].options.find(o=>o.good));assert(r.completed);assert(printFollowup(t,location,13,1200));assert(!t.done);const dest=location==='f5'?'f7':location;assert.deepEqual(paperTarget(t),{dest,spot:'printer'});assert(!paperAction(t,'f7','nurse'));assert(!paperAction(t,dest==='g2'?'f7':'g2','printer'));assert(paperAction(t,dest,'printer'));assert.deepEqual(paperTarget(t),{dest:'f7',spot:'nurse'});assert(!paperAction(t,dest,'printer'));
+ const s={started:true,mode:'walk',clock:1244,wardCalls:{x:t}};assert.equal(paperReminders(s).length,0);s.clock++;assert.equal(paperReminders(s).length,1);assert.equal(paperReminders(s).length,0);assert(paperAction(t,'f7','nurse'));assert(t.done);assert(!paperAction(t,'f7','nurse'));s.clock+=100;assert.equal(paperReminders(s).length,0);
+}
+const clinic=createState();clinic.run=createRun({seed:'CLINIC-HELP'});clinic.clock=920;clinic.run.mode='random';clinic.run.adaptiveBonus=null;clinic.completed=clinic.run.phases.filter(p=>LOCAL_OR_IDS.includes(p.case)||p.case==='orSenior').map(p=>p.id);if(!clinic.run.phases.some(p=>p.case==='orSenior')){clinic.run.phases.push({id:'orSenior',case:'orSenior'});clinic.run.ids.push('orSenior');clinic.completed.push('orSenior');clinic.run.total++;clinic.run.maxScore+=10;}const added=continueOR(clinic,'orSenior');assert.equal(added.dest,'g2');assert.equal(continueOR(clinic,'orSenior'),null);assert.equal(new Set(clinic.run.ids).size,clinic.run.ids.length);
+const s=createState();for(const place of ['clinic','ward','discussion','pocket']){const count=cookiesLeft(s,place);for(let i=0;i<count;i++)assert(takeCookie(s,place));assert.equal(cookiesLeft(s,place),0);assert(!takeCookie(s,place));}assert.equal(cookiesLeft(createState(),'clinic'),3);
+for(const clock of [990,1049,1050,1200]){const s=createState();s.started=true;s.run=createRun({seed:'NO-BONUS'});s.clock=clock;s.completed=[...s.run.ids];s.run.phases=s.run.phases.filter(p=>p.case!=='orSenior');assert.equal(continueOR(s,'orassist'),null);}
+console.log('Shift workflow passed: resumable postoperative completion gates, immediate next-OR release, bounded early-finish support with scoring, printer-to-ward delivery and timed recall, finite per-place cookies and reset.');
