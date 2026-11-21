@@ -45,3 +45,5 @@
  .mission-card p{font-size:12px;line-height:1.5;margin:5px 0}
  .mission-card .day-pacing-hint{font-size:12px!important;line-height:1.5!important}
 }
+
+.calendar-cell .calendar-party{grid-column:1/-1;color:#7e552a;font-weight:700;white-space:normal;overflow:visible}

@@ -1,4 +1,5 @@
 import {WARD_PLAN,wardRect} from './ward-plan.js';
+export const ENT_PARTY_DATE='2027-01-27';
 export const MORNING_START=440,CONFERENCE_START=450,CONFERENCE_END=465;
 export const CONFERENCE_TYPES=[{id:'nose-ear',label:'鼻耳次專科',short:'鼻耳',color:'teal'},{id:'larynx',label:'喉次專科',short:'喉',color:'blue'},{id:'head-neck',label:'頭頸次專科',short:'頭頸',color:'gold'},{id:'paper',label:'paper reading',short:'Paper',color:'rose'}];
 export const CONFERENCE_PAPERS=[
@@ -47,12 +48,13 @@ export function monthlyConferences(seed,month,{today,conference}={}){
  const forced=typeof conference==='boolean'&&today?.startsWith(month+'-')&&[1,2,3,4,5].includes(new Date(today+'T12:00:00Z').getUTCDay());
  for(let day=1;day<=days;day++){
   const date=month+'-'+String(day).padStart(2,'0'),weekday=new Date(date+'T12:00:00Z').getUTCDay();
-  if(weekday===0||weekday===6||(forced&&!conference&&date===today))continue;
+  if(weekday===0||weekday===6||(forced&&!conference&&date===today&&date!==ENT_PARTY_DATE))continue;
   const week=Math.floor((day-1+new Date(Date.UTC(year,m-1,1)).getUTCDay())/7);
   if(!weeks.has(week))weeks.set(week,{id:week,dates:[],selected:0});weeks.get(week).dates.push(date);
  }
  const take=(week,date)=>{selected.push(date);week.selected++;week.dates.splice(week.dates.indexOf(date),1);};
- if(forced&&conference){const week=[...weeks.values()].find(w=>w.dates.includes(today));take(week,today);}
+ if(month===ENT_PARTY_DATE.slice(0,7)){const week=[...weeks.values()].find(w=>w.dates.includes(ENT_PARTY_DATE));take(week,ENT_PARTY_DATE);}
+ if(forced&&conference&&!selected.includes(today)){const week=[...weeks.values()].find(w=>w.dates.includes(today));take(week,today);}
  // Fill the least occupied weeks first so meetings stay spread across the month.
  const count=6+scheduleHash(key+'|count')%3;
  while(selected.length<count){

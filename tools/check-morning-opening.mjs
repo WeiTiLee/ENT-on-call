@@ -37,3 +37,13 @@ const r=wardRect(WARD_PLAN.core.find(r=>r.id==='討論室'));assert(inDiscussion
 assert.equal(openingClockRate({opening:o,clock:440}),.1);assert.equal(openingClockRate({opening:o,clock:455}),.2);assert.equal(openingClockRate({clock:440}),null);
 const spot={x:0,z:3,approaches:perimeterApproaches(0,0,4,2,1)};for(const p of [{x:0,z:2},{x:0,z:-2},{x:3,z:0},{x:-3,z:0}])assert.equal(spotDistance(spot,p),0);assert.equal(sortedApproaches(spot,{x:0,z:-8})[0].z,-2);assert.equal(spotDistance(spot,{x:0,z:0},()=>false),Infinity);
 console.log('Morning calendar passed: 480 month schedules with 6–8 weekday meetings, at most two per week, all four types, matching today and forced previews; 180 complete paper/attendance paths, today-click gating, leap/year grids, Taiwan date and blocked-side interaction.');
+
+for(let i=0;i<180;i++)for(const conference of [undefined,true,false]){
+ const party=createMorningOpening('PARTY-'+i,{today:'2027-01-27',conference});
+ assert(party.conference);assert(calendarEntry(party,'2027-01-27'));
+ const plan=monthlyConferences(party.seed,'2027-01',{today:party.today,conference});
+ assert(plan.length>=6&&plan.length<=8);assert.equal(plan.filter(e=>e.date==='2027-01-27').length,1);
+ const html=calendarHTML(party,{year:2027,month:0,selected:'2027-01-27'});
+ assert(html.includes('calendar-party">忘年會'));assert(html.includes('ENT 忘年會'));assert(html.includes('07:30　'));
+}
+console.log('January 27 passed: fixed 2027 ENT party and morning conference across 180 seeds and preview overrides.');
