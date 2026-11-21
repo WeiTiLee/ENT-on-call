@@ -29,6 +29,7 @@ player.setVolume(5);assert.equal(media.volume,1);player.setVolume(NaN);assert.eq
 assert.equal(await player.play('missing'),false);
 let finish;media.next=()=>new Promise(resolve=>{finish=()=>{media.paused=false;resolve();};});const late=player.play();player.pause();finish();await late;assert(media.paused,'Late play promises must respect a subsequent pause');
 const audio=await readFile(new URL('../dist/assets/audio/before-dawn.m4a',import.meta.url));assert.equal(audio.toString('ascii',4,8),'ftyp');assert(audio.length>1_000_000);assert(MUSIC_TRACKS.every(t=>t.src));
+const song=await readFile(new URL('../dist/assets/audio/today-is-good.mp3',import.meta.url));assert(song.length>1_000_000);assert.equal(MUSIC_TRACKS.length,2);assert.equal(ENDING_TRACK,'before-dawn');media.next=null;assert(await player.play('today-is-good'));assert.equal(player.snapshot().track.title,'今天也很好');assert.equal(media.src,'./assets/audio/today-is-good.mp3');assert(await player.play('before-dawn'));assert.equal(player.snapshot().track.id,ENDING_TRACK);
 assert.equal(musicClock(267.9),'4:27');assert.equal(musicClock(Infinity),'0:00');
 assert.deepEqual(operatingTeam(13).map(r=>r.id),['circulator','scrub']);assert.deepEqual(operatingTeam(16).map(r=>r.id),['circulator','scrub','anesthesia','senior']);assert.deepEqual(operatingTeam(17),[]);
 assert.equal(anesthesiaLine(13,870),null);assert.equal(isAnesthesiaCutoff(16,869.9),false);assert.equal(isAnesthesiaCutoff(16,870),true);assert.equal(isAnesthesiaCutoff(16,1050),false);assert.equal(isAnesthesiaCutoff(13,900),false);

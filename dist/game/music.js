@@ -1,4 +1,4 @@
-export const MUSIC_TRACKS=[{id:'before-dawn',title:'天亮以前',artist:'原創忘年會歌曲',src:'./assets/audio/before-dawn.m4a',type:'audio/mp4'}];
+export const MUSIC_TRACKS=[{id:'before-dawn',title:'天亮以前',artist:'原創忘年會歌曲',src:'./assets/audio/before-dawn.m4a',type:'audio/mp4'},{id:'today-is-good',title:'今天也很好',artist:'2027 ENT 忘年會主題曲',src:'./assets/audio/today-is-good.mp3',type:'audio/mpeg'}];
 export const ENDING_TRACK='before-dawn';
 export function musicScope({started,ending,location,orRoom}){return ending?'ending':!started?null:location==='f5'&&[13,16].includes(orRoom)?'or':'distant';}
 export function musicPresence({ending,location,orRoom},sourceRoom){return ending?1:location!=='f5'?.08:orRoom===sourceRoom?1:orRoom?.35:.2;}
