@@ -33,7 +33,7 @@ for(const variants of variations.values())assert(variants.size>=3);
 assert.deepEqual([...orderVariants].sort(),WARD_ORDER_REQUESTS.map(x=>x.id).sort(),'Every order variant appears across personal seeds');
 for(const [location,room,spot] of [['f7',null,'computer'],['g2',null,'desk'],['f5',13,'or-computer'],['f5',16,'or-computer']])assert(isWardComputer(location,room,spot));
 for(const [location,room,spot] of [['f7',null,'nurse'],['g2',null,'printer'],['f5',null,'or-computer'],['f5',12,'or-computer'],['g7',null,'computer']])assert(!isWardComputer(location,room,spot));
-for(const [location,room,target] of [['f7',null,{dest:'f7',spot:'computer'}],['g7',null,{dest:'f7',spot:'computer'}],['g2',null,{dest:'g2',spot:'desk'}],['f1',null,{dest:'g2',spot:'desk'}],['f5',13,{dest:'f5',spot:'or-computer'}],['f5',16,{dest:'f5',spot:'or-computer'}],['f5',null,{dest:'f5',spot:'or-13'}]])assert.deepEqual(wardComputerTarget(location,room),target);
+for(const [location,room,target] of [['f7',null,{dest:'f7',spot:'computer'}],['g7',null,{dest:'f7',spot:'computer'}],['g2',null,{dest:'g2',spot:'desk'}],['f1',null,{dest:'f1',spot:'ed-computer'}],['f5',13,{dest:'f5',spot:'or-computer'}],['f5',16,{dest:'f5',spot:'or-computer'}],['f5',null,{dest:'f5',spot:'or-13'}]])assert.deepEqual(wardComputerTarget(location,room),target);
 for(const posture of ['stand','sit','lie']){
   const s=createStudioNightWait('WAIT');s.care.posture=posture;s.mode='walk';
   for(let i=0;i<29;i++)assert(!tickNightWaiting(s,1));assert(tickNightWaiting(s,1),'Every posture must get a call after 30 active seconds');

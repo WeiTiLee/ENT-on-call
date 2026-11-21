@@ -1,3 +1,4 @@
+import {AIRWAY_EVENT} from './airway-case.js';
 import {BIRTHDAY_EVENT} from './birthday.js';
 import {OSA_EVENT} from './osa-bleeding.js';
 import {NOSE_EVENT} from './nose-case.js';
@@ -27,6 +28,7 @@ const briefOf={fish:'魚刺、病史與最後一餐的誓言。',blueberry:'會�
 export const EVENTS={
   ...NIGHT_WARD_EVENTS,
   ...Object.fromEntries(Object.entries(ORIGINAL_CASES).map(([id,c])=>[id,{...c,callType:'consult',category:categoryOf[id],dest:destOf[id],spot:'patient',orRoom:['tonsil','airway'].includes(id)?16:undefined,brief:briefOf[id]}])),
+  airway:AIRWAY_EVENT,
   fish:FISH_EVENT,
   nose:NOSE_EVENT,
   tonsil:OSA_EVENT,

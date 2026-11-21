@@ -10,8 +10,8 @@ export const WARD_ORDER_REQUESTS=[
   {id:'dc-iv',item:'DC 點滴 order',surgery:'SMP',note:'病人目前進食良好，病房回報吃得不錯，請核對後處理點滴醫囑。',call:'病人現在吃得不錯，可以幫我 DC 點滴的 order 嗎？',action:'確認現況後，DC 點滴 order',reply:'DC 點滴 order 已送出。'},
   {id:'dc-oximeter',item:'DC fix oximeter order',surgery:'OSA 手術 · 術後第3天',note:'OSA 術後第3天，病房請你處理 fix oximeter 醫囑。',call:'病人 OSA 術後三天了，可以幫我 DC fix oximeter 的 order 嗎？',action:'核對術後天數，DC fix oximeter order',reply:'DC fix oximeter order 已送出。'}
 ];
-export const isWardComputer=(location,room,spot)=>location==='f7'&&spot==='computer'||location==='g2'&&spot==='desk'||location==='f5'&&[13,16].includes(room)&&spot==='or-computer';
-export function wardComputerTarget(location,room){if(location==='f7'||location==='g7')return{dest:'f7',spot:'computer'};if(location==='f5')return{dest:'f5',spot:[13,16].includes(room)?'or-computer':'or-13'};return{dest:'g2',spot:'desk'};}
+export const isWardComputer=(location,room,spot)=>location==='f1'&&spot==='ed-computer'||location==='f7'&&spot==='computer'||location==='g2'&&spot==='desk'||location==='f5'&&[13,16].includes(room)&&spot==='or-computer';
+export function wardComputerTarget(location,room){if(location==='f1')return{dest:'f1',spot:'ed-computer'};if(location==='f7'||location==='g7')return{dest:'f7',spot:'computer'};if(location==='f5')return{dest:'f5',spot:[13,16].includes(room)?'or-computer':'or-13'};return{dest:'g2',spot:'desk'};}
 const meta={
   wardConsent:{title:'明天開刀，同意書還沒簽',spot:'nurse',brief:'護理站核對、找平板、輸入病歷號、醫師簽名，再交護理師拿給病人簽。'},
   wardOrder:{title:'醫師，幫我補個 order',spot:'computer',brief:'漱口、補印出院／CT單、DC點滴或fix oximeter；回任意電腦處理。'},

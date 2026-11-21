@@ -4,8 +4,8 @@ export function postoperative(s){return s.accepted?s.postoperative?.[s.run?.phas
 export function beginPostoperative(s,text){
  const p=s.run.phases[s.phase];if(!(LOCAL_OR_IDS.includes(p.case)||p.case==='orSenior'||s.caseMode==='or'))return null;
  const all=s.postoperative??={};if(all[p.id])return all[p.id].done?null:all[p.id];
- const t=p.case==='orassist'?s.npx:s.localOR?.[EVENTS[p.case]?.localProcedure];
- return all[p.id]={id:p.id,room:EVENTS[p.case]?.orRoom||16,patient:t?.patient.name||EVENTS[p.case].patient,title:EVENTS[p.case].title,text,order:false,specimen:p.case==='orEar',needsSpecimen:p.case!=='orEar',done:false};
+ const t=p.case==='airway'?s.airway:p.case==='orassist'?s.npx:s.localOR?.[EVENTS[p.case]?.localProcedure];
+ return all[p.id]={id:p.id,room:EVENTS[p.case]?.orRoom||16,patient:t?.patient.name||EVENTS[p.case].patient,title:EVENTS[p.case].title,text,order:false,specimen:['orEar','airway'].includes(p.case),needsSpecimen:!['orEar','airway'].includes(p.case),done:false};
 }
 export function postoperativeAction(t,action){if(!t||t.done)return false;if(action==='order')t.order=true;else if(action==='specimen'&&t.needsSpecimen)t.specimen=true;else return false;t.done=t.order&&t.specimen;return true;}
 export function continueOR(s,id){

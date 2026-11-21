@@ -192,7 +192,7 @@ export function createWorld(canvas){
     return{x:6,z:5.8};
   }
   function emergency(){roomBase(34,27);box(0,.09,-3,29,.025,17,0xdbe3d0);for(const x of [-9,9]){bed(x,-4,true);curtain(x-2.2,-4,5.5,true);box(x+3.2,.6,-5,1.3,1.2,1.3,0xd5dccb,true);monitor(x+3.2,-5.5);box(x+3.2,1.4,-5,1.5,.08,1.5,0x9fc9c0);}
-    restChair('rest-chair',-9,2,{label:'椅子 · 坐下'});box(-2,.7,-10,8,1.4,1.8,wood,true);monitor(-3,-10);monitor(0,-10);chair(-3,-8.2);chair(0,-8.2);sign('急診 / EMERGENCY',0,2.6,-12.5,8,'#b66e52','#fff6e7');sign('會診區',9,.12,.2,3.5,'#d2dac4','#6e8260',true);const d=person(5,-1,0xe1e9d9);root.add(d);const n=person(10,-6.5,0x75a99a);root.add(n);plant(-13,5);spots.push({id:'patient',x:7,z:.5,label:'急診病人',icon:'＋'});elevator(-10,9.5);bridge(10,9.5);return{x:-4,z:8.8};}
+    restChair('rest-chair',-9,2,{label:'椅子 · 坐下'});box(-2,.7,-10,8,1.4,1.8,wood,true);monitor(-3,-10);monitor(0,-10);chair(-3,-8.2);chair(0,-8.2);sign('急診 / EMERGENCY',0,2.6,-12.5,8,'#b66e52','#fff6e7');sign('會診區',9,.12,.2,3.5,'#d2dac4','#6e8260',true);const d=person(5,-1,0xe1e9d9);root.add(d);const n=person(10,-6.5,0x75a99a);root.add(n);plant(-13,5);box(2,.99,-9.7,.8,.18,.55,0x40535b);box(2,1.16,-9.7,.58,.15,.2,0x879b96);spots.push({id:'ed-computer',x:-3,z:-7,label:'電腦',height:2.8,labelX:-3,labelZ:-10},{id:'ed-phone',x:2,z:-7,label:'急診電話',height:2.6,labelX:2,labelZ:-9.7});spots.push({id:'patient',x:7,z:.5,label:'急診病人',icon:'＋'});elevator(-10,9.5);bridge(10,9.5);return{x:-4,z:8.8};}
   function lobby(){roomBase(25,21);restChair('rest-chair',-7,-5);for(let i=1;i<4;i++)chair(-7+i*1.5,-5,0);plant(-10,-8);plant(10,-8);
     box(0,.07,0,2.4,.018,16,0x9cafad);for(const x of [-1.45,1.45])box(x,.085,0,.08,.02,16,0xd7c5a1);
     sign(loc.startsWith('f')?'F 棟連通區':'G 棟連通區',0,2.4,-9.9,7,'#263e52','#e5dfcf');sign(loc.startsWith('f')?'同層跨棟 →':'← 同層跨棟',0,.13,1,4,'#b9cbc7','#3b5665',true);
@@ -246,6 +246,7 @@ export function createWorld(canvas){
   function configureApproaches(){
     const add=(id,x,z,w,d,pad=1.1)=>{const s=spots.find(s=>s.id===id);if(s)s.approaches=perimeterApproaches(x,z,w,d,pad);};
     if(loc==='f7'){const n=NURSING_STATION;add('computer',-1.5,n.frontZ,2,1.4);add('printer',n.printer.x,n.printer.z,1.4,1.6);add('consent-tablet',n.tablet.x,n.tablet.z,1,1.5);const nurse=spots.find(s=>s.id==='nurse');nurse.approaches=[{x:.3,z:n.frontZ+1.8},{x:-3.5,z:n.center.z-2.5},{x:3.5,z:n.center.z-2.5}];}
+    if(loc==='f1'){add('ed-computer',-3,-10,2,1.8);add('ed-phone',2,-9.7,1,1);}
     if(loc==='g2'){add('patient',0,-4.4,2.6,3.4);add('patient2',8,-4.4,2.6,3.4);add('treatment-bed',-7,-6,2.4,4.8);add('clinic-nurse',-14,-6,1,1);add('desk',-10.5,5.9,3,3.4);add('printer',-7.3,5.9,1.4,3.4);add('clinic-phone',-2.5,5.9,1.4,3.4);add('snacks',1.5,5.8,2.6,1.8);add('tissue',5.8,-12.3,1,1.8);}
     if(interiorRoom){for(const role of operatingTeam(interiorRoom))add('or-team-'+role.id,role.x,role.z,1,1);add('or-computer',10,1,3.4,1.7);add('or-radio',-11,-2.9,2,1.5);add('operation',0,-.8,3.3,5.7);add('or-exit',10,10.6,3.5,.3);}
     for(const s of spots)if(s.restPose==='sit'&&s.seat)s.approaches=perimeterApproaches(s.seat.x,s.seat.z,1.2,1.2,.9);
